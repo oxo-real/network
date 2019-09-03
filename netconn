@@ -1,0 +1,200 @@
+#!/bin/bash
+#
+##
+###             _
+###  _ __   ___| |_ ___ ___  _ __  _ __  _ __
+### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \| '__|
+### | | | |  __/ || (_| (_) | | | | | | | |
+### |_| |_|\___|\__\___\___/|_| |_|_| |_|_|
+###
+###  _ _|_ _ ._    _  _
+### (_\/|_(_)|_)\/(_|(/_
+###   /      |  /  _|
+###
+### netconnr
+### connect to a network
+###
+### (c) 2019 cytopyge
+###
+##
+#
+
+
+# functions
+
+
+#read_flags() {
+# not working when in fuction! why? don't know!
+
+	while getopts ":w:" opt; do
+		case $opt in
+			w)
+				## -w wireless network flag
+				w=${OPTARG}
+				wl_conf="$HOME/keys_/wl/$w.wifi"
+				;;
+			\?)
+				printf "invalid option: -${OPTARG}"
+				exit 1
+				;;
+			:)
+				# display help
+				printf "option -${OPTARG} requires an argument"
+				exit 1
+				;;
+		esac
+	done
+
+#}
+
+
+# define reply functions
+
+reply_plain() {
+
+        # entery must be confirmed explicitly (by pushing enter)
+        read reply
+
+}
+
+
+reply_single() {
+
+        # first entered character goes directly to $reply
+        stty_0=$(stty -g)
+        stty raw #-echo
+        reply=$(head -c 1)
+        stty $stty_0
+
+}
+
+
+reply_single_hidden() {
+
+        # first entered character goes silently to $reply
+        stty_0=$(stty -g)
+        stty raw -echo
+        reply=$(head -c 1)
+        stty $stty_0
+
+}
+
+
+get_sudo() {
+
+	sudo -k
+	sudo echo
+
+}
+
+
+select_interface() {
+
+	# select interface
+	ip a
+	echo
+	printf "enter preferred interface number: "
+	reply_single
+	interface_number=$reply
+	echo
+
+	## derive interface from interface_number
+	interface=$(ip a | grep "^$interface_number" | awk '{print $2}' | sed 's/://')
+
+	## confirmation
+	printf "connect via interface '$interface'? (Y/n) "
+        reply_single_hidden
+
+        if printf "$reply" | grep -iq "^n" ; then
+                clear
+                select_interface
+        else
+                echo
+                printf "interface '$interface' selected\n"
+		echo
+	fi
+
+}
+
+
+set_interface_up() {
+
+	printf "bringing interface '$interface' up ... "
+
+	sudo ip link set $interface up
+
+	if [ $? -eq 0  ]; then
+		printf "success\n"
+		echo
+	else
+		echo
+		printf "error, unable to bring $interface up\n"
+		printf "exiting\n"
+	fi
+
+}
+
+
+check_wireless_interface() {
+
+	if [[ $interface == w* ]]; then
+		wireless=1
+	fi
+
+}
+
+
+wireless_network_select() {
+
+	if [ $wireless == 1 ]; then
+		# select wireless network from list
+		wpa_supplicant
+	fi
+
+}
+
+
+wpa_supplicant() {
+
+	sudo wpa_supplicant -B -i $interface -c $wl_conf
+	echo
+}
+
+
+dhcp_connect() {
+
+	sudo dhcpcd -w $interface
+
+	echo
+	printf "getting host information from dhcp server\n"
+	printf "configuring network interface $interface\n"
+	printf "writing DNS configuration to resolvconf\n"
+	resolvconf -i
+	echo
+	printf "checking if interface $interface reports a working carrier\n"
+	printf "trying to obtain a lease, then forking to background\n"
+	if [ $? -eq 0 ]; then
+		printf "interface '$interface' connected\n"
+		printf "dhcpcd daemonizing...\n"
+	else
+		printf "$interface not able to obtain lease\n"
+		printf "exiting\n"
+		exit
+	fi
+	echo
+	ping -c 1 9.9.9.9
+	echo
+	ip a
+
+}
+
+
+#read_flags
+get_sudo
+clear
+echo
+select_interface
+set_interface_up
+check_wireless_interface
+wireless_network_select
+dhcp_connect
