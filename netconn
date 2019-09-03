@@ -20,6 +20,12 @@
 #
 
 
+# define colors
+RED='\033[0;31m' # red
+GREEN='\033[0;32m' # green
+NOC='\033[0m' # no color
+
+
 # functions
 
 
@@ -34,12 +40,12 @@
 				wl_conf="$HOME/keys_/wl/$w.wifi"
 				;;
 			\?)
-				printf "invalid option: -${OPTARG}"
+				printf "${RED}invalid option: -${OPTARG}${NOC}"
 				exit 1
 				;;
 			:)
 				# display help
-				printf "option -${OPTARG} requires an argument"
+				printf "${RED}option -${OPTARG} requires an argument${NOC}"
 				exit 1
 				;;
 		esac
@@ -84,6 +90,8 @@ get_sudo() {
 
 	sudo -k
 	sudo echo
+	clear
+	echo
 
 }
 
@@ -119,16 +127,19 @@ select_interface() {
 
 set_interface_up() {
 
+	sleep 0.5
+	clear
+
 	printf "bringing interface '$interface' up ... "
 
 	sudo ip link set $interface up
 
 	if [ $? -eq 0  ]; then
-		printf "success\n"
+		printf "${GREEN}success${NOC}\n"
 		echo
 	else
 		echo
-		printf "error, unable to bring $interface up\n"
+		printf "${RED}error, unable to bring $interface up${NOC}\n"
 		printf "exiting\n"
 	fi
 
@@ -137,6 +148,7 @@ set_interface_up() {
 
 check_wireless_interface() {
 
+	wireless=0
 	if [[ $interface == w* ]]; then
 		wireless=1
 	fi
@@ -174,10 +186,10 @@ dhcp_connect() {
 	printf "checking if interface $interface reports a working carrier\n"
 	printf "trying to obtain a lease, then forking to background\n"
 	if [ $? -eq 0 ]; then
-		printf "interface '$interface' connected\n"
+		printf "interface ${GREEN}'$interface' connected${NOC}\n"
 		printf "dhcpcd daemonizing...\n"
 	else
-		printf "$interface not able to obtain lease\n"
+		printf "${RED}$interface not able to obtain lease${NOC}\n"
 		printf "exiting\n"
 		exit
 	fi
@@ -189,12 +201,23 @@ dhcp_connect() {
 }
 
 
-#read_flags
+wl_info() {
+
+	if [ $wireless == 1 ]; then
+		echo
+		iwconfig $interface
+	fi
+
+	printf "external ip: ${GREEN}$(curl -4 https://ident.me)${NOC}\n"
+
+}
+
+
+#read_flags #doesn't work in function block
 get_sudo
-clear
-echo
 select_interface
 set_interface_up
 check_wireless_interface
 wireless_network_select
 dhcp_connect
+wl_info
