@@ -29,29 +29,26 @@ NOC='\033[0m' # no color
 # functions
 
 
-#read_flags() {
-# not working when in fuction! why? don't know!
+# read_flags
 
-	while getopts ":w:" opt; do
-		case $opt in
-			w)
-				## -w wireless network flag
-				w=${OPTARG}
-				wl_conf="$HOME/keys_/wl/$w.wifi"
-				;;
-			\?)
-				printf "${RED}invalid option: -${OPTARG}${NOC}"
-				exit 1
-				;;
-			:)
-				# display help
-				printf "${RED}option -${OPTARG} requires an argument${NOC}"
-				exit 1
-				;;
-		esac
-	done
-
-#}
+while getopts ":w:" opt; do
+	case $opt in
+		w)
+			## -w wireless network flag
+			w=${OPTARG}
+			wl_conf="$HOME/keys_/wl/$w.wifi"
+			;;
+		\?)
+			printf "${RED}invalid option: -${OPTARG}${NOC}"
+			exit 1
+			;;
+		:)
+			# display help
+			printf "${RED}option -${OPTARG} requires an argument${NOC}"
+			exit 1
+			;;
+	esac
+done
 
 
 # define reply functions
@@ -108,6 +105,14 @@ select_interface() {
 
 	## derive interface from interface_number
 	interface=$(ip a | grep "^$interface_number" | awk '{print $2}' | sed 's/://')
+
+	## if interface is wireless, check for valid option
+	if [ ${interface:0:1} == 'w' ] && [ -z $wl_conf ]; then
+		echo
+		printf "${RED}no configuration allocated for interface '$interface'${NOC}\n"
+		printf "exiting...\n"
+		exit
+	fi
 
 	## confirmation
 	printf "connect via interface '$interface'? (Y/n) "
