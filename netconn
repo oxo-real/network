@@ -37,8 +37,8 @@ while getopts ":w:h" opt; do
 	case $opt in
 		w)
 			## -w wireless network flag
-			w=${OPTARG}
-			wl_conf="$HOME/keys_/wl/$w.wifi"
+			wl_conf=${OPTARG}
+			#wl_conf="$HOME/keys_/wl/$w.wifi"
 			;;
 		h)
 			## -h display help text
@@ -124,6 +124,9 @@ select_interface() {
 	fi
 
 	## confirmation
+	echo
+	ip a | grep $interface
+	echo
 	printf "connect via interface '$interface'? (Y/n) "
         reply_single_hidden
 
@@ -133,6 +136,7 @@ select_interface() {
         else
                 echo
                 printf "interface '$interface' selected\n"
+		sleep 0.5
 		echo
 	fi
 
