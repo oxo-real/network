@@ -33,12 +33,18 @@ NOC='\033[0m' # no color
 
 # read_flags
 
-while getopts ":w:h" opt; do
+while getopts ":k:w:h" opt; do
 	case $opt in
+		k)
+			## -k netkill
+			networks=${OPTARG}
+                	sh $HOME/git/code/netkill/netkill
+			exit 0
+			;;
 		w)
 			## -w wireless network flag
 			wl_conf=${OPTARG}
-			#wl_conf="$HOME/keys_/wl/$w.wifi"
+			#wl_conf="$HOME/_keys/wl/$w.wifi"
 			;;
 		h)
 			## -h display help text
@@ -62,7 +68,7 @@ done
 
 reply_plain() {
 
-        # entery must be confirmed explicitly (by pushing enter)
+        # entry must be confirmed explicitly (by pushing enter)
         read reply
 
 }
@@ -102,6 +108,23 @@ get_sudo() {
 }
 
 
+run_netkill() {
+
+	printf "run netkill first? (y/N) "
+	reply_single_hidden
+        if printf "$reply" | grep -iq "^y" ; then
+                clear
+                sh $HOME/git/code/netkill/netkill
+		echo
+	else
+		echo
+		printf "skipping netkill ...\n"
+		echo
+	fi
+
+}
+
+
 select_interface() {
 
 	# select interface
@@ -134,6 +157,7 @@ select_interface() {
                 clear
                 select_interface
         else
+                echo
                 echo
                 printf "interface '$interface' selected\n"
 		sleep 0.5
@@ -233,6 +257,7 @@ wl_info() {
 
 #read_flags #doesn't work in function block
 get_sudo
+run_netkill
 select_interface
 set_interface_up
 check_wireless_interface
