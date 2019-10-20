@@ -38,7 +38,7 @@ while getopts ":k:w:h" opt; do
 		k)
 			## -k netkill
 			networks=${OPTARG}
-                	sh $HOME/git/code/netkill/netkill
+                	sh $HOME/_git/code/netkill/netkill
 			exit 0
 			;;
 		w)
@@ -114,7 +114,7 @@ run_netkill() {
 	reply_single_hidden
         if printf "$reply" | grep -iq "^y" ; then
                 clear
-                sh $HOME/git/code/netkill/netkill
+                sh $HOME/_git/code/netkill/netkill
 		echo
 	else
 		echo
