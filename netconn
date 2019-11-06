@@ -96,6 +96,12 @@ reply_single_hidden() {
 }
 
 
+reply_timed() {
+
+	read -s -n 1 -t 5 reply
+
+}
+
 # ##
 
 get_sudo() {
@@ -111,7 +117,8 @@ get_sudo() {
 run_netkill() {
 
 	printf "run netkill first? (y/N) "
-	reply_single_hidden
+	#reply_single_hidden
+	reply_timed
         if printf "$reply" | grep -iq "^y" ; then
                 clear
                 sh $HOME/_git/code/netkill/netkill
