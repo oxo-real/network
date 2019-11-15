@@ -1,0 +1,145 @@
+#!/bin/sh
+#
+##
+###             _   _    _ _ _
+###  _ __   ___| |_| | _(_) | |
+### | '_ \ / _ \ __| |/ / | | |
+### | | | |  __/ |_|   <| | | |
+### |_| |_|\___|\__|_|\_\_|_|_|
+###
+###  _ _|_ _ ._    _  _
+### (_\/|_(_)|_)\/(_|(/_
+###   /      |  /  _|
+###
+### netkill
+### thoroughly kill a network connection
+### (c) 2019 cytopyge
+###
+##
+#
+
+
+# first ask permissions
+sudo echo
+
+
+kill_tunnel() {
+	sudo openvpn --rmtun $i
+	printf "persistent tunnel removed\n"
+
+	sudo pkill openvpn
+	printf "openvpn process terminated\n"
+
+	sleep 1
+
+	i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+
+	echo
+
+}
+
+
+kill_wpa_supp() {
+	sudo pkill wpa_supplicant
+	printf "wpa_supplicant process terminated\n"
+	echo
+
+}
+
+
+kill_dhcpcd() {
+
+	sudo dhcpcd -k $i
+	printf "dhcp release message sent to '$i'\n"
+	printf "dhcp client daemon cache cleared\n"
+	echo
+
+	sudo pkill dhcpcd
+	printf "dhcpcd process terminated\n"
+	echo
+
+}
+
+
+kill_ip () {
+
+	sudo ip link set $i down
+	printf "device '$i' state set down\n"
+	echo
+
+	sudo ip a flush $i
+	printf "ip a flushed\n"
+	echo
+
+}
+
+
+# retrieve interface variable
+#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+source_ip="9.9.9.9"
+i=$(ip route get $source_ip | awk '{print $5}')
+
+
+# interface connection not active
+if [ -z "$i" ]; then
+	printf "no active interface detected\n"
+	echo
+
+	kill_wpa_supp
+	kill_dhcpcd
+	kill_ip
+
+fi
+
+
+# interface connection type: ethernet
+if [ "$(printf "$i" | cut -c 1)" = "e" ]; then
+	printf "interface connected: $i (ethernet)\n"
+	echo
+
+	kill_dhcpcd
+	kill_ip
+
+fi
+
+
+# interface connection type: wireless
+if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
+	printf "interface connected: $i (wireless)\n"
+	echo
+
+	kill_wpa_supp
+	kill_dhcpcd
+	kill_ip
+
+fi
+
+
+# interface connection type: tunnel
+if [ "$(printf "$i" | cut -c 1)" = "t" ]; then
+	printf "interface connected: $i (tunnel)\n"
+	echo
+
+	kill_tunnel
+	kill_wpa_supp
+	kill_dhcpcd
+	kill_ip
+
+fi
+
+
+# info for human
+printf "verifying disconnect\n"
+ping -c 1 $source_ip
+ip a
+echo
+printf "netkill complete\n"
+exit
+
+
+#[TODO]
+# if more than one device active
+if [ -n $(ip a | grep -iv loopback | grep unknown) ]; then
+	printf "a device state is unknown\n"
+	printf "try running netkill\n"
+fi
