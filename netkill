@@ -19,7 +19,8 @@
 #
 
 
-# first ask permissions
+# force permission
+sudo -k
 sudo echo
 
 
