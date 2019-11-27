@@ -108,6 +108,8 @@ get_sudo() {
 
 	sudo -k
 	sudo echo
+	t0=`date +%Y%m%d_%H%M%S`
+	ip a > $HOME/_temp/'$t0'_netconn.tmp
 	clear
 	echo
 
@@ -116,18 +118,22 @@ get_sudo() {
 
 run_netkill() {
 
-	printf "run netkill first? (y/N) "
+	printf "disconnect current network connection? (y/N) "
 	#reply_single_hidden
 	reply_timed
         if printf "$reply" | grep -iq "^y" ; then
-                clear
-                sh $HOME/_git/code/netconn/netkill
-		echo
+            clear
+	    printf "running netkill...\n"
+            sh $HOME/_git/code/netconn/netkill
+	    echo
 	else
-		echo
-		printf "skipping netkill ...\n"
-		echo
+	    echo
+	    printf "setting up connection...\n"
+	    echo
 	fi
+
+	sleep 2
+	clear
 
 }
 
@@ -263,7 +269,18 @@ wl_info() {
 }
 
 
+show_ipa_diff() {
+
+	t1=`date +%Y%m%d_%H%M%S`
+	ip a > $HOME/_temp/'$t1'_netconn.tmp
+
+	diff $HOME/_temp/'$t0'_netconn.tmp $HOME/_temp/'$t1'_netconn.tmp
+
+}
+
+
 #read_flags #doesn't work in function block
+printf "NETCONN TESTING\n"
 get_sudo
 run_netkill
 select_interface
@@ -272,3 +289,4 @@ check_wireless_interface
 wireless_network_select
 dhcp_connect
 wl_info
+show_ipa_diff
