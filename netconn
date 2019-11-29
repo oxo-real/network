@@ -280,7 +280,6 @@ show_ipa_diff() {
 
 
 #read_flags #doesn't work in function block
-printf "NETCONN TESTING\n"
 get_sudo
 run_netkill
 select_interface
