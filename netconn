@@ -155,7 +155,7 @@ select_interface() {
 	if [ ${interface:0:1} == 'w' ] && [ -z $wl_conf ]; then
 		echo
 		printf "${RED}no wireless configuration allocated for '$interface'${NOC}\n"
-		printf "${RED}please point to a vaild file with the 'w' flag'${NOC}\n"
+		printf "${RED}point to a valid configuration with the 'w' flag'${NOC}\n"
 		printf "exiting...\n"
 		exit
 	fi
