@@ -117,22 +117,25 @@ get_sudo() {
 
 run_netkill() {
 
-	printf "disconnect current network connection? (y/N) "
-	#reply_single_hidden
-	reply_timed
-        if printf "$reply" | grep -iq "^y" ; then
-            clear
-	    printf "running netkill...\n"
-            sh $HOME/_git/code/netconn/netkill
-	    echo
-	else
-	    echo
-	    printf "setting up connection...\n"
-	    echo
-	fi
+    export from_netconn=1
+    
+    printf "disconnect current network connection? (y/N) "
+    #reply_single_hidden
+    reply_timed
+    if printf "$reply" | grep -iq "^y" ; then
+        clear
+	printf "running netkill...\n"
+        sh $HOME/_git/code/netconn/netkill
+	echo
+    else
+	echo
+	printf "setting up connection...\n"
+	echo
+    fi
 
-	sleep 2
-	clear
+    unset from_netconn
+    sleep 2
+    clear
 
 }
 

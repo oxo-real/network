@@ -19,8 +19,13 @@
 #
 
 
-# force permission
-sudo -k
+# force permission if not from_netconn
+if [ -z $from_netconn ]; then
+    
+    sudo -k
+
+fi
+
 sudo echo
 t0=`date +%Y%m%d_%H%M%S`
 ip a > $HOME/_temp/'$t0'_netkill.tmp
