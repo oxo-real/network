@@ -16,7 +16,7 @@
 ###
 ### usage: netconn [-w <config.wifi>]
 ###
-### (c) 2019 cytopyge
+### (c) 2019 - 2020 cytopyge
 ###
 ##
 #
@@ -147,19 +147,31 @@ select_interface() {
 
 	reply_timed
 	
-	##"if no entry then search wireless devices in ip a and select one that is up"
+	##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
+	## -n -> var lenght greater than 0
+	## -z -> var lenght equals 0
 	if [ -n "$reply" ]; then
+	    ## we have an entry for interface
 	    interface_number=$reply
 	else
-	    auto_retrieved_wl_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^w)
+	    ## no entry for interface
+	    if [ -z "$wl_conf"  ]; then
+		## no wl_conf flag entry
+		## try to autoconnect via ethernet interface
+		auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
+	    else
+		## we do have a wl_conf flag
+		## try to autoconnect via wireless interface
+		auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^w)
+	    fi
 	fi   
 	
 	echo
 
 	## derive interface from interface_number
 	interface=$(ip a | grep "^$interface_number" | awk '{print $2}' | sed 's/://')
-	if [ -n "$auto_retrieved_wl_interface" ]; then
-	    interface=$auto_retrieved_wl_interface
+	if [ -n "$auto_retrieved_interface" ]; then
+	    interface=$auto_retrieved_interface
 	fi
 	
 	## if interface is wireless, check for entered wireless network flag
