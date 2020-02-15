@@ -96,9 +96,26 @@ reply_single_hidden() {
 }
 
 
+get_cursor_pos() {
+    
+    # Usage: get_cursor_pos
+    IFS='[;' read -p $'\e[6n' -d R -rs _ y x _
+    printf '%s\n' "$x $y"
+
+}
+
+
 reply_timed() {
 
-	read -s -n 1 -t 5 reply
+    #read -s -n 1 -t 5 reply
+
+    for t in {5..1}
+    do
+        tput cup get_cursor_pos
+        echo -n "($t)"
+	read -s -n 1 -t 1 reply
+        sleep 0.1
+    done
 
 }
 
