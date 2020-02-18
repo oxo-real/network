@@ -137,8 +137,8 @@ run_netkill() {
     export from_netconn=1
     
     printf "disconnect current network connection? (y/N) "
-    #reply_single_hidden
-    reply_timed
+    reply_single_hidden
+    #reply_timed
     if printf "$reply" | grep -iq "^y" ; then
         clear
 	printf "running netkill...\n"
@@ -174,9 +174,8 @@ select_interface() {
     ip a
     echo
     printf "enter preferred interface number [$show_default_interface]: "
-    #reply_single
-    
-    reply_timed
+    reply_single
+    #reply_timed
     
     ##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
     ## -n -> var lenght greater than 0
@@ -219,7 +218,8 @@ select_interface() {
     ip a | grep $interface
     echo
     printf "connect via interface '$interface'? (Y/n) "
-    reply_timed
+    reply_single
+    #reply_timed
     
     if printf "$reply" | grep -iq "^n" ; then
         clear
