@@ -188,11 +188,11 @@ select_interface() {
 	if [ -n "$wl_conf"  ]; then
 	    ## no wl_conf flag entry
 	    ## try to autoconnect via ethernet interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^w)
+	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
 	else
 	    ## we do have a wl_conf flag
 	    ## try to autoconnect via wireless interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
+	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^w)
 	fi
     fi   
     
