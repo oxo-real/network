@@ -174,7 +174,7 @@ select_interface() {
     ip a
     echo
     printf "enter preferred interface number [$show_default_interface]: "
-    reply_single
+    reply_single_hidden
     #reply_timed
     
     ##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
@@ -218,7 +218,7 @@ select_interface() {
     ip a | grep $interface
     echo
     printf "connect via interface '$interface'? (Y/n) "
-    reply_single
+    reply_single_hidden
     #reply_timed
     
     if printf "$reply" | grep -iq "^n" ; then
@@ -319,7 +319,8 @@ wl_info() {
 		iwconfig $interface
 	fi
 
-	printf "external ip: ${GREEN}$(curl -4 https://ident.me)${NOC}\n"
+	printf "external ip: ${GREEN}$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)${NOC}\n"
+	## printf "external ip: ${GREEN}$(curl -4 https://ident.me)${NOC}\n"
 
 }
 
