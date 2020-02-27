@@ -12,7 +12,7 @@
 ###   /      |  /  _|
 ###
 ### netconn
-### connect to a network
+### connect to a network..., the right way
 ###
 ### usage: netconn [-w <config.wifi>]
 ###
@@ -74,6 +74,32 @@ reply_plain() {
 }
 
 
+reply_timed() {
+
+    read -s -n 1 -t 5 reply
+
+    # [TODO] countdown timer
+    #for t in {5..1}
+    #do
+    #    tput cup get_cursor_pos
+    #    echo -n "($t)"
+    #	read -s -n 1 -t 1 reply
+    #    sleep 0.1
+    #done
+
+}
+
+
+get_cursor_pos() {
+    
+    #[TODO] countdown timer
+    # Usage: get_cursor_pos
+    IFS='[;' read -p $'\e[6n' -d R -rs _ y x _
+    printf '%s\n' "$x $y"
+
+}
+
+
 reply_single() {
 
         # first entered character goes directly to $reply
@@ -96,30 +122,6 @@ reply_single_hidden() {
 }
 
 
-get_cursor_pos() {
-    
-    # Usage: get_cursor_pos
-    IFS='[;' read -p $'\e[6n' -d R -rs _ y x _
-    printf '%s\n' "$x $y"
-
-}
-
-
-reply_timed() {
-
-    #read -s -n 1 -t 5 reply
-
-    for t in {5..1}
-    do
-        tput cup get_cursor_pos
-        echo -n "($t)"
-	read -s -n 1 -t 1 reply
-        sleep 0.1
-    done
-
-}
-
-
 get_sudo() {
 
 	sudo -k
@@ -137,8 +139,8 @@ run_netkill() {
     export from_netconn=1
     
     printf "disconnect current network connection? (y/N) "
-    reply_single_hidden
-    #reply_timed
+    #reply_single_hidden
+    reply_timed
     if printf "$reply" | grep -iq "^y" ; then
         clear
 	printf "running netkill...\n"
@@ -161,12 +163,12 @@ select_interface() {
 
     # show default interface
     if [ -n "$wl_conf"  ]; then
-	## no wl_conf flag entry
-	## try to autoconnect via ethernet interface
+	## we do have a wl_conf flag
+	## show wireless interface
 	show_default_interface=$(ip a | grep '^[0-9]' | awk -F ': <' '{print $1}' | grep '^[0-9]\+:\sw')
     else
-	## we do have a wl_conf flag
-	## try to autoconnect via wireless interface
+	## no wl_conf flag entry
+	## show ethernet interface or empty string
 	show_default_interface=$(ip a | grep '^[0-9]' | awk -F ': <' '{print $1}' | grep '^[0-9]\+:\se')
     fi
     
@@ -174,8 +176,8 @@ select_interface() {
     ip a
     echo
     printf "enter preferred interface number [$show_default_interface]: "
-    reply_single_hidden
-    #reply_timed
+    #reply_single_hidden
+    reply_timed
     
     ##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
     ## -n -> var lenght greater than 0
@@ -186,13 +188,17 @@ select_interface() {
     else
 	## no entry for interface
 	if [ -n "$wl_conf"  ]; then
-	    ## no wl_conf flag entry
-	    ## try to autoconnect via ethernet interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
-	else
 	    ## we do have a wl_conf flag
 	    ## try to autoconnect via wireless interface
 	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^w)
+	elif [ -z "$wl_conf"  ]; then
+	    ## we do have a wl_conf flag
+	    ## try to autoconnect via ethernet interface
+	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
+	else
+	    printf "${RED}no valid interface received, please try again${NOC}\n"
+	    sleep 0.5
+	    select_interface
 	fi
     fi   
     
@@ -218,8 +224,8 @@ select_interface() {
     ip a | grep $interface
     echo
     printf "connect via interface '$interface'? (Y/n) "
-    reply_single_hidden
-    #reply_timed
+    #reply_single_hidden
+    reply_timed
     
     if printf "$reply" | grep -iq "^n" ; then
         clear
@@ -304,6 +310,7 @@ dhcp_connect() {
 		printf "exiting\n"
 		exit
 	fi
+	#sleep 1
 	echo
 	ping -c 1 9.9.9.9
 	echo
