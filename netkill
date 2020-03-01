@@ -21,8 +21,12 @@
 
 # force permission if not from_netconn
 if [ -z $from_netconn ]; then
-    
+
+    clear
+    printf "netkill (c) 2019 - 2020 cytopyge\n"
     sudo -k
+    echo
+    echo
 
 fi
 
