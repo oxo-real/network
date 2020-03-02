@@ -127,6 +127,11 @@ initial_screen() {
 	clear
 	printf "netconn (c) 2019 - 2020 cytopyge\n"
 	echo
+	printf "Please report any experienced malfunctioning or suggestions for improvement.\n"
+	printf "By entering your password below you will consent to the following:\n"
+	printf "This software is provided as is without warranty of any kind.\n"
+	printf "Continuing execution of this software is at your own risk.\n"
+	echo
 	echo
 }
 
