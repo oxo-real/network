@@ -137,7 +137,9 @@ initial_screen() {
 
 get_sudo() {
 
+	set -e
 	sudo -k
+	printf "In order to obtain the necessarry privileges,\nplease enter "
 	sudo echo
 	t0=`date +%Y%m%d_%H%M%S`
 	ip a > $HOME/_temp/'$t0'_netconn.tmp
