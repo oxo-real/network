@@ -125,12 +125,14 @@ reply_single_hidden() {
 initial_screen() {
 
 	clear
+
+	echo
 	printf "netconn (c) 2019 - 2020 cytopyge\n"
 	echo
-	printf "Please report any experienced malfunctioning or suggestions for improvement.\n"
+	printf "Please report any malfunctioning or suggestions for improvement.\n"
 	printf "By entering your password below you will consent to the following:\n"
-	printf "This software is provided as is without warranty of any kind.\n"
-	printf "Continuing execution of this software is at your own risk.\n"
+	printf "This software is provided as is, without warranty of any kind.\n"
+	printf "Continuing execution of this software is totally at own risk.\n"
 	echo
 	echo
 }
