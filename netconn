@@ -22,10 +22,27 @@
 #
 
 
-# define colors
-RED='\033[0;31m' # red
-GREEN='\033[0;32m' # green
-NOC='\033[0m' # no color
+# script specific constants
+
+script_name="netconn"
+developer="cytopyge"
+initial_release_year=2019
+source_dir="$HOME/_git/code/snippets"
+
+
+# general function definitions
+
+## define colors
+source $source_dir/text_appearance
+
+## reply functions
+source $source_dir/reply_functions
+
+## initial_screen
+source $source_dir/splash_screen
+
+## user authentication
+source $source_dir/get_sudo
 
 
 # functions
@@ -64,32 +81,6 @@ while getopts ":k:w:h" opt; do
 done
 
 
-# define reply functions
-
-reply_plain() {
-
-        # entry must be confirmed explicitly (by pushing enter)
-        read reply
-
-}
-
-
-reply_timed() {
-
-    read -s -n 1 -t 5 reply
-
-    # [TODO] countdown timer
-    #for t in {5..1}
-    #do
-    #    tput cup get_cursor_pos
-    #    echo -n "($t)"
-    #	read -s -n 1 -t 1 reply
-    #    sleep 0.1
-    #done
-
-}
-
-
 get_cursor_pos() {
 
     #[TODO] countdown timer
@@ -99,55 +90,8 @@ get_cursor_pos() {
 
 }
 
-
-reply_single() {
-
-        # first entered character goes directly to $reply
-        stty_0=$(stty -g)
-        stty raw #-echo
-        reply=$(head -c 1)
-        stty $stty_0
-
-}
-
-
-reply_single_hidden() {
-
-        # first entered character goes silently to $reply
-        stty_0=$(stty -g)
-        stty raw -echo
-        reply=$(head -c 1)
-        stty $stty_0
-
-}
-
-
-initial_screen() {
-
-	clear
-
-	echo
-	printf "netconn (c) 2019 - 2020 cytopyge\n"
-	echo
-	printf "This software is provided as is, without warranty of any kind.\n"
-	printf "Continuing execution of this software is totally at own risk.\n"
-	echo
-}
-
-get_sudo() {
-
-	set -e
-	sudo -k
-	printf "In order to obtain the necessarry privileges,\nplease enter "
-	sudo echo
-	set +e
-	clear
-	echo
-
-	t0=`date +%Y%m%d_%H%M%S`
-	ip a > $HOME/_temp/'$t0'_netconn.tmp
-
-}
+t0=`date +%Y%m%d_%H%M%S`
+ip a > $HOME/_temp/'$t0'_netconn.tmp
 
 
 run_netkill() {
@@ -156,7 +100,7 @@ run_netkill() {
 
     printf "disconnect current network connection? (y/N) "
     #reply_single_hidden
-    reply_timed
+    reply_single_hidden_timed
     if printf "$reply" | grep -iq "^y" ; then
         clear
 	printf "running netkill...\n"
@@ -193,7 +137,7 @@ select_interface() {
     echo
     printf "enter preferred interface number [$show_default_interface]: "
     #reply_single_hidden
-    reply_timed
+    reply_single_hidden_timed
 
     ##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
     ## -n -> var lenght greater than 0
@@ -240,8 +184,7 @@ select_interface() {
     ip a | grep $interface
     echo
     printf "connect via interface '$interface'? (Y/n) "
-    #reply_single_hidden
-    reply_timed
+    reply_single_hidden_timed
 
     if printf "$reply" | grep -iq "^n" ; then
         clear
@@ -343,7 +286,6 @@ wl_info() {
 	fi
 
 	printf "external ip: ${GREEN}$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)${NOC}\n"
-	## printf "external ip: ${GREEN}$(curl -4 https://ident.me)${NOC}\n"
 
 }
 
@@ -359,7 +301,7 @@ show_ipa_diff() {
 
 
 #read_flags #doesn't work in function block
-initial_screen
+splash_screen
 get_sudo
 run_netkill
 select_interface
