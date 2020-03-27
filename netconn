@@ -98,22 +98,24 @@ run_netkill() {
 
     export from_netconn=1
 
-    printf "disconnect current network connection? (y/N) "
-    #reply_single_hidden
-    reply_single_hidden_timed
-    if printf "$reply" | grep -iq "^y" ; then
-        clear
-	printf "running netkill...\n"
-        sh $HOME/_git/code/netconn/netkill
-	echo
-    else
-	echo
-	printf "setting up connection...\n"
-	echo
+    if [ -n "$(ip -br a | grep -i up)" ]; then
+    	printf "disconnect current network connection? (y/N) "
+    	#reply_single_hidden
+    	reply_single_hidden_timed
+    	if printf "$reply" | grep -iq "^y" ; then
+    	    clear
+    	    printf "running netkill...\n"
+    	    sh $HOME/_git/code/netconn/netkill
+    	    echo
+    	else
+    	    echo
+    	    printf "setting up connection...\n"
+    	    echo
+    	fi
     fi
 
     unset from_netconn
-    sleep 2
+    sleep 1
     clear
 
 }
