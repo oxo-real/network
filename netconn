@@ -27,7 +27,7 @@
 script_name="netconn"
 developer="cytopyge"
 initial_release_year=2019
-source_dir="$HOME/_git/code/snippets"
+source_dir="$HOME/_git/code/sources/functions"
 
 
 # general function definitions
@@ -43,9 +43,6 @@ source $source_dir/splash_screen
 
 ## user authentication
 source $source_dir/get_sudo
-
-
-# functions
 
 
 # read_flags
@@ -79,6 +76,9 @@ while getopts ":k:w:h" opt; do
 			;;
 	esac
 done
+
+
+# functions
 
 
 get_cursor_pos() {
