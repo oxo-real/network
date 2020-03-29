@@ -78,7 +78,7 @@ while getopts ":k:w:h" opt; do
 done
 
 
-# functions
+# specific function definitions
 
 
 get_cursor_pos() {
