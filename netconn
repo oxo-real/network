@@ -12,7 +12,7 @@
 ###   /      |  /  _|
 ###
 ### netconn
-### connect to a network..., the right way
+### (dis)connect to a network..., the right way
 ###
 ### usage: netconn [-w <config.wifi>]
 ###
@@ -47,7 +47,7 @@ source $source_dir/get_sudo
 
 # read_flags
 
-while getopts ":k:w:h" opt; do
+while getopts ":k:w:sh" opt; do
 	case $opt in
 		k)
 			## -k netkill
@@ -58,7 +58,10 @@ while getopts ":k:w:h" opt; do
 		w)
 			## -w wireless network flag
 			wl_conf=${OPTARG}
-			#wl_conf="$HOME/_keys/wl/$w.wifi"
+			;;
+		s)
+			## -s show splash screen
+			show=1
 			;;
 		h)
 			## -h display help text
@@ -205,7 +208,6 @@ select_interface() {
 set_interface_up() {
 
 	sleep 0.5
-	clear
 
 	printf "bringing interface '$interface' up ... "
 
@@ -303,7 +305,7 @@ show_ipa_diff() {
 
 
 #read_flags #doesn't work in function block
-splash_screen
+[[ -n $show ]] && splash_screen
 get_sudo
 run_netkill
 select_interface
