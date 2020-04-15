@@ -192,7 +192,6 @@ select_interface() {
     reply_single_hidden_timed
 
     if printf "$reply" | grep -iq "^n" ; then
-        clear
         select_interface
     else
         echo
