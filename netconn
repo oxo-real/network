@@ -119,7 +119,6 @@ run_netkill() {
 
     unset from_netconn
     sleep 1
-    clear
 
 }
 
