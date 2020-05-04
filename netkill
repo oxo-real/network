@@ -45,7 +45,7 @@ source $source_dir/get_sudo
 # force permission if not from_netconn
 if [ -z $from_netconn ]; then
 
-    splash_screen
+    #splash_screen
     get_sudo
 
 fi
