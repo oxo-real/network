@@ -226,7 +226,7 @@ set_interface_up() {
 check_wireless_interface() {
 
 	wireless=0
-	if [[ $interface == w* ]]; then
+	if [[ $interface == wl* ]]; then
 		wireless=1
 	fi
 
