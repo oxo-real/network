@@ -302,10 +302,21 @@ show_ipa_diff() {
 }
 
 
+unblock_radios() {
+
+	sudo rfkill unblock wlan
+	#rfkill unblock bluetooth
+	rfkill
+	echo
+
+}
+
+
 #read_flags #doesn't work in function block
 [[ -n $show ]] && splash_screen
 get_sudo
 run_netkill
+unblock_radios
 select_interface
 set_interface_up
 check_wireless_interface
