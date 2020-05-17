@@ -280,6 +280,13 @@ dhcp_connect() {
 }
 
 
+enable_dns() {
+
+	sudo systemctl start systemd-resolved.service
+
+}
+
+
 wl_info() {
 
 	if [ $wireless == 1 ]; then
@@ -322,5 +329,6 @@ set_interface_up
 check_wireless_interface
 wireless_network_select
 dhcp_connect
+enable_dns
 wl_info
 show_ipa_diff
