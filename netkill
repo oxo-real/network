@@ -116,7 +116,6 @@ kill_ip () {
 block_radios() {
 
 	sudo rfkill block wlan
-	sudo rfkill block bluetooth
 
 }
 
@@ -179,8 +178,6 @@ fi
 
 # rfkill radios
 block_radios
-rfkill
-echo
 
 
 # info for human
@@ -192,6 +189,8 @@ diff $HOME/_temp/'$t0'_netkill.tmp $HOME/_temp/'$t1'_netkill.tmp
 
 ping -c 1 $source_ip
 ip a
+echo
+rfkill
 echo
 printf "netkill complete\n"
 exit

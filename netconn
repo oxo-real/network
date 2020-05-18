@@ -311,10 +311,11 @@ show_ipa_diff() {
 
 unblock_radios() {
 
-	sudo rfkill unblock wlan
-	#rfkill unblock bluetooth
-	rfkill
-	echo
+	if [[ ${interface:0:2} == 'wl' ]]; then
+		sudo rfkill unblock wlan
+		rfkill
+		echo
+	fi
 
 }
 
@@ -323,8 +324,8 @@ unblock_radios() {
 [[ -n $show ]] && splash_screen
 get_sudo
 run_netkill
-unblock_radios
 select_interface
+unblock_radios
 set_interface_up
 check_wireless_interface
 wireless_network_select
