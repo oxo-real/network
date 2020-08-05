@@ -271,7 +271,9 @@ dhcp_connect() {
 		printf "exiting\n"
 		exit
 	fi
-	#sleep 1
+	# give dhcpcd some time to connect before pinging
+	# otherwise ping is too early with packet loss
+	sleep 2
 	echo
 	ping -c 1 9.9.9.9
 	echo
