@@ -332,6 +332,6 @@ set_interface_up
 check_wireless_interface
 wireless_network_select
 dhcp_connect
-enable_dns
+#enable_dns
 wl_info
 show_ipa_diff
