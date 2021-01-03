@@ -16,7 +16,7 @@
 ###
 ### usage: netconn [-w <config.wifi>]
 ###
-### (c) 2019 - 2020 cytopyge
+### (c) 2019 - 2021 cytopyge
 ###
 ##
 #
@@ -28,6 +28,7 @@ script_name="netconn"
 developer="cytopyge"
 initial_release_year=2019
 source_dir="$HOME/_git/code/sources/functions"
+temp_dir="$XDG_CACHE_HOME/temp"
 
 
 # general function definitions
@@ -93,8 +94,10 @@ get_cursor_pos() {
 
 }
 
+
+[[ -d $temp_dir ]] || mkdir -pv $temp_dir
 t0=`date +%Y%m%d_%H%M%S`
-ip a > $HOME/_temp/'$t0'_netconn.tmp
+ip a > $temp_dir/'$t0'_netconn.tmp
 
 
 run_netkill() {
@@ -258,8 +261,8 @@ dhcp_connect() {
 	echo
 	printf "getting host information from dhcp server\n"
 	printf "configuring network interface $interface\n"
-	printf "writing DNS configuration to resolvconf\n"
-	resolvconf -i
+	#printf "writing DNS configuration to resolvconf\n"
+	#resolvconf -i
 	echo
 	printf "checking if interface $interface reports a working carrier\n"
 	printf "trying to obtain a lease, then forking to background\n"
@@ -304,9 +307,9 @@ wl_info() {
 show_ipa_diff() {
 
 	t1=`date +%Y%m%d_%H%M%S`
-	ip a > $HOME/_temp/'$t1'_netconn.tmp
+	ip a > $temp_dir/'$t1'_netconn.tmp
 
-	diff $HOME/_temp/'$t0'_netconn.tmp $HOME/_temp/'$t1'_netconn.tmp
+	diff $temp_dir/'$t0'_netconn.tmp $temp_dir/'$t1'_netconn.tmp
 
 }
 

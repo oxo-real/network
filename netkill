@@ -13,7 +13,7 @@
 ###
 ### netkill
 ### thoroughly kill a network connection
-### (c) 2019 cytopyge
+### (c) 2019 - 2021 cytopyge
 ###
 ##
 #
@@ -25,6 +25,7 @@ script_name="netkill"
 developer="cytopyge"
 initial_release_year=2019
 source_dir="$HOME/_git/code/sources/functions"
+temp_dir="$XDG_CACHE_HOME/temp"
 
 
 # general function definitions
@@ -46,13 +47,15 @@ source $source_dir/get_sudo
 if [ -z $from_netconn ]; then
 
     #splash_screen
+	echo
     get_sudo
 
 fi
 
 
+[[ -d $temp_dir ]] || mkdir -pv $temp_dir
 t0=`date +%Y%m%d_%H%M%S`
-ip a > $HOME/_temp/'$t0'_netkill.tmp
+ip a > $temp_dir/"$t0"_netkill.tmp
 
 
 stop_dns_service() {
@@ -130,7 +133,8 @@ stop_dns_service
 
 # interface connection not active
 if [ -z "$i" ]; then
-	printf "no active interface detected\n"
+	printf "${RED}no active interface detected${NOC}\n"
+	printf "interface is possibly already down\n"
 	echo
 
 	kill_wpa_supp
@@ -183,11 +187,19 @@ block_radios
 # info for human
 printf "verifying disconnect\n"
 t1=`date +%Y%m%d_%H%M%S`
-ip a > $HOME/_temp/'$t1'_netkill.tmp
+ip a > $temp_dir/"$t1"_netkill.tmp
 
-diff $HOME/_temp/'$t0'_netkill.tmp $HOME/_temp/'$t1'_netkill.tmp
+diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp
 
+printf "* "
 ping -c 1 $source_ip
+printf "however icmp can be locally blocked\n"
+printf "* "
+ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
+[[ -z $ipex ]] \
+	&& printf "via opendns.com no external ip address detected\n" \
+	|| printf "${RED}external ip address still reads: $ipex${NOC}\n"
+
 ip a
 echo
 rfkill
