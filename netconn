@@ -129,14 +129,36 @@ run_netkill() {
 select_interface() {
 
     # show default interface
-    if [ -n "$wl_conf"  ]; then
-	## we do have a wl_conf flag
-	## show wireless interface
-	show_default_interface=$(ip a | grep '^[0-9]' | awk -F ': <' '{print $1}' | grep '^[0-9]\+:\swl')
+    if [ -n "$wl_conf" ]; then
+
+		## we do have a wl_conf flag
+
+		## show wireless interface (wl*)
+		show_default_interface=$(ip a | \
+			grep '^[0-9]' |\
+			awk -F ': <' '{print $1}' |\
+			grep '^[0-9]\+:\swl')
+
     else
-	## no wl_conf flag entry
-	## show ethernet interface or empty string
-	show_default_interface=$(ip a | grep '^[0-9]' | awk -F ': <' '{print $1}' | grep '^[0-9]\+:\se')
+
+		## no wl_conf flag entry
+
+		### show usb interface (enp*)
+		show_default_interface=$(ip a | \
+			grep '^[0-9]' | \
+			awk -F ': <' '{print $1}' | \
+			grep '^[0-9]\+:\senp')
+
+		### show ethernet interface (eno*)
+		if [ -n "$show_default_interface"]; then
+
+			show_default_interface=$(ip a | \
+				grep '^[0-9]' | \
+				awk -F ': <' '{print $1}' | \
+				grep '^[0-9]\+:\senp')
+
+		fi
+
     fi
 
     # select interface
@@ -146,28 +168,47 @@ select_interface() {
     #reply_single_hidden
     reply_single_hidden_timed
 
-    ##"if no entry then when wl_conf<>0 then search wireless devices in ip a and select one that is up"
+    ## if no entry then when wl_conf<>0; then
+	##	search wireless devices in ip a and select one that is up
     ## -n -> var lenght greater than 0
     ## -z -> var lenght equals 0
     if [ -n "$reply" ]; then
-	## we have an entry for interface
-	interface_number=$reply
-    else
-	## no entry for interface
-	if [ -n "$wl_conf"  ]; then
-	    ## we do have a wl_conf flag
-	    ## try to autoconnect via wireless interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^wl)
-	elif [ -z "$wl_conf"  ]; then
-	    ## we do have a wl_conf flag
-	    ## try to autoconnect via ethernet interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^e)
+
+		## we have an entry for interface
+		interface_number=$reply
+
 	else
-	    printf "${RED}no valid interface received, please try again${NOC}\n"
-	    sleep 0.5
-	    select_interface
+
+		## no entry for interface
+
+		if [ -n "$wl_conf"  ]; then
+
+			## we do have a wl_conf flag
+		    ## try to autoconnect via wireless interface
+		    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^wl)
+
+		elif [ -z "$wl_conf"  ]; then
+
+			## we do not have a wl_conf flag
+			## try to autoconnect via ethernet (enp) interface
+		    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^enp)
+
+		elif [ -z "$auto_retrieved_interface"  ]; then
+
+			## we do not have a wl_conf flag
+			## still no auto_retrieved_interface acquired
+			## try to autoconnect via ethernet (eno) interface
+		    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^eno)
+
+		else
+
+			printf "${RED}no valid interface received, please try again${NOC}\n"
+		    sleep 0.5
+		    select_interface
+
+		fi
+
 	fi
-    fi
 
     echo
 
