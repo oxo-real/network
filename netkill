@@ -66,6 +66,8 @@ stop_dns_service() {
 
 
 kill_tunnel() {
+
+	## openvpn
 	sudo openvpn --rmtun $i
 	printf "persistent tunnel removed\n"
 
@@ -122,6 +124,19 @@ block_radios() {
 
 }
 
+protonvpn_disconnect() {
+
+	## protonvpn
+	if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
+
+		printf "disconnecting protonvpn...\n"
+		sudo protonvpn d
+		protonvpn s
+
+	fi
+
+}
+
 
 # retrieve interface variable
 #i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
@@ -130,11 +145,12 @@ i=$(ip route get $source_ip | awk '{print $5}')
 
 stop_dns_service
 
+protonvpn_disconnect
 
 # interface connection not active
 if [ -z "$i" ]; then
 	printf "${RED}no active interface detected${NOC}\n"
-	printf "interface is possibly already down\n"
+	printf "${YELLOW}interface is possibly already down${NOC}\n"
 	echo
 
 	kill_wpa_supp
