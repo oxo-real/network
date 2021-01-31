@@ -145,8 +145,6 @@ i=$(ip route get $source_ip | awk '{print $5}')
 
 stop_dns_service
 
-protonvpn_disconnect
-
 # interface connection not active
 if [ -z "$i" ]; then
 	printf "${RED}no active interface detected${NOC}\n"
@@ -194,6 +192,10 @@ if [ "$(printf "$i" | cut -c 1)" = "t" ]; then
 	kill_ip
 
 fi
+
+
+# disconnect protonvpn
+protonvpn_disconnect
 
 
 # rfkill radios
