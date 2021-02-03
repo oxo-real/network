@@ -150,7 +150,7 @@ select_interface() {
 			grep '^[0-9]\+:\senp')
 
 		### show ethernet interface (eno*)
-		if [ -n "$show_default_interface"]; then
+		if [ -n "$show_default_interface" ]; then
 
 			show_default_interface=$(ip a | \
 				grep '^[0-9]' | \
@@ -328,6 +328,7 @@ dhcp_connect() {
 
 enable_dns() {
 
+	# systemd dns resolving service
 	sudo systemctl start systemd-resolved.service
 
 }
@@ -351,6 +352,11 @@ show_ipa_diff() {
 	ip a > $temp_dir/'$t1'_netconn.tmp
 
 	diff $temp_dir/'$t0'_netconn.tmp $temp_dir/'$t1'_netconn.tmp
+
+	# diff gives exit status code 1 if files are different
+	# therefore we can't execute an && after netconn
+	# this is the (ugly) repair #[TODO] neater solution
+	echo > /dev/null
 
 }
 
