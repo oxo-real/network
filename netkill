@@ -47,7 +47,6 @@ source $source_dir/get_sudo
 if [ -z $from_netconn ]; then
 
     #splash_screen
-	echo
     get_sudo
 
 fi
@@ -127,13 +126,13 @@ block_radios() {
 protonvpn_disconnect() {
 
 	## protonvpn
-	if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
+	#if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
 
 		printf "disconnecting protonvpn...\n"
 		sudo protonvpn d
 		protonvpn s
 
-	fi
+	#fi
 
 }
 
