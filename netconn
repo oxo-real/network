@@ -49,36 +49,45 @@ source $source_dir/get_sudo
 # read_flags
 
 while getopts ":k:w:sh" opt; do
+
 	case $opt in
+
 		k)
 			## -k netkill
 			networks=${OPTARG}
                 	sh $HOME/_git/code/netconn/netkill
 			exit 0
 			;;
+
 		w)
 			## -w wireless network flag
 			wl_conf=${OPTARG}
 			;;
+
 		s)
 			## -s show splash screen
 			show=1
 			;;
+
 		h)
 			## -h display help text
 			printf "netconn: usage: netconn [-w <config.wifi>]\n"
 			exit 0
 			;;
+
 		\?)
 			printf "netconn: ${RED}invalid option: -${OPTARG}${NOC}"
 			exit 1
 			;;
+
 		:)
 			## display help
 			printf "netconn: ${RED}option -${OPTARG} requires an argument${NOC}"
 			exit 1
 			;;
+
 	esac
+
 done
 
 
@@ -109,20 +118,27 @@ run_netkill() {
     export from_netconn=1
 
     if [ -n "$(ip -br a | grep -i up)" ]; then
+
     	printf "disconnect current network connection? (y/N) "
     	#reply_single_hidden
     	reply_single_hidden_timed
-    	if printf "$reply" | grep -iq "^y" ; then
-    	    clear
+
+		if printf "$reply" | grep -iq "^y" ; then
+
+			clear
     	    printf "running netkill...\n"
     	    sh $HOME/_git/code/netconn/netkill
     	    echo
-    	else
-    	    echo
+
+		else
+
+			echo
     	    printf "setting up connection...\n"
     	    echo
-    	fi
-    fi
+
+		fi
+
+	fi
 
     unset from_netconn
     sleep 1
@@ -218,18 +234,23 @@ select_interface() {
 
     ## derive interface from interface_number
     interface=$(ip a | grep "^$interface_number" | awk '{print $2}' | sed 's/://')
-    if [ -n "$auto_retrieved_interface" ]; then
-	interface=$auto_retrieved_interface
-    fi
+
+	if [ -n "$auto_retrieved_interface" ]; then
+
+		interface=$auto_retrieved_interface
+
+	fi
 
     ## if interface is wireless, check for entered wireless network flag
     if [ ${interface:0:1} == 'wl' ] && [ -z $wl_conf ]; then
-	echo
-	printf "${RED}no wireless configuration allocated for '$interface'${NOC}\n"
-	printf "${RED}point to a valid configuration with the 'w' flag'${NOC}\n"
-	printf "exiting...\n"
-	exit
-    fi
+
+		echo
+		printf "${RED}no wireless configuration allocated for '$interface'${NOC}\n"
+		printf "${RED}point to a valid configuration with the 'w' flag'${NOC}\n"
+		printf "exiting...\n"
+		exit
+
+	fi
 
     ## confirmation
     echo
@@ -239,14 +260,18 @@ select_interface() {
     reply_single_hidden_timed
 
     if printf "$reply" | grep -iq "^n" ; then
-        select_interface
-    else
-        echo
+
+		select_interface
+
+	else
+
+		echo
         echo
         printf "interface '$interface' selected\n"
-	sleep 0.5
-	echo
-    fi
+		sleep 0.5
+		echo
+
+	fi
 
 }
 
@@ -260,12 +285,16 @@ set_interface_up() {
 	sudo ip link set $interface up
 
 	if [ $? -eq 0  ]; then
+
 		printf "${GREEN}success${NOC}\n"
 		echo
+
 	else
+
 		echo
 		printf "${RED}error, unable to bring $interface up${NOC}\n"
 		printf "exiting\n"
+
 	fi
 
 }
@@ -274,8 +303,11 @@ set_interface_up() {
 check_wireless_interface() {
 
 	wireless=0
+
 	if [[ $interface == wl* ]]; then
+
 		wireless=1
+
 	fi
 
 }
@@ -284,8 +316,10 @@ check_wireless_interface() {
 wireless_network_select() {
 
 	if [ $wireless == 1 ]; then
+
 		# select wireless network from list
 		wpa_supp
+
 	fi
 
 }
@@ -311,14 +345,20 @@ dhcp_connect() {
 	echo
 	printf "checking if interface $interface reports a working carrier\n"
 	printf "trying to obtain a lease, then forking to background\n"
+
 	if [ $? -eq 0 ]; then
+
 		printf "interface ${GREEN}'$interface' connected${NOC}\n"
 		printf "dhcpcd daemonizing...\n"
+
 	else
+
 		printf "${RED}$interface not able to obtain lease${NOC}\n"
 		printf "exiting\n"
 		exit
+
 	fi
+
 	# give dhcpcd some time to connect before pinging
 	# otherwise ping is too early with packet loss
 	sleep 5
@@ -341,8 +381,10 @@ enable_dns() {
 wl_info() {
 
 	if [ $wireless == 1 ]; then
+
 		echo
 		iwconfig $interface
+
 	fi
 
 	printf "external ip: ${GREEN}$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)${NOC}\n"
@@ -368,9 +410,11 @@ show_ipa_diff() {
 unblock_radios() {
 
 	if [[ ${interface:0:2} == 'wl' ]]; then
+
 		sudo rfkill unblock wlan
 		rfkill
 		echo
+
 	fi
 
 }
