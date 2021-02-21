@@ -97,6 +97,9 @@ kill_dhcpcd() {
 	printf "dhcp client daemon cache cleared\n"
 	echo
 
+	sudo dhcpcd -x $i
+	printf "dhcp exit process for '$i'\n"
+
 	sudo pkill dhcpcd
 	printf "dhcpcd process terminated\n"
 	echo

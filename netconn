@@ -387,7 +387,9 @@ wl_info() {
 
 	fi
 
-	printf "external ip: ${GREEN}$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)${NOC}\n"
+	exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+
+	printf "external ip: ${YELLOW}$exip${NOC}\n"
 
 }
 
