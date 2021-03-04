@@ -211,14 +211,18 @@ ip a > $temp_dir/"$t1"_netkill.tmp
 
 diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp
 
+#[DEV] to give interface time to shutdown
+#[DEV] adn disconnect from ip address
+sleep 3
+
 printf "* "
 ping -c 1 $source_ip
 printf "however icmp can be locally blocked\n"
-printf "* "
+#printf "* "
 ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
 [[ -z $ipex ]] \
-	&& printf "via opendns.com no external ip address detected\n" \
-	|| printf "${RED}external ip address still reads: $ipex${NOC}\n"
+	&& printf "* via opendns.com no external ip address detected\n" \
+	|| printf "${RED}* external ip address still reads: $ipex${NOC}\n"
 
 ip a
 echo
