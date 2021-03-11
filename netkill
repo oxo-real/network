@@ -83,8 +83,10 @@ kill_tunnel() {
 
 
 kill_wpa_supp() {
+	sudo systemctl stop wpa_supplicant.service
 	sudo pkill wpa_supplicant
 	printf "wpa_supplicant process terminated\n"
+	systemctl status wpa_supplicant.service
 	echo
 
 }
@@ -100,8 +102,10 @@ kill_dhcpcd() {
 	sudo dhcpcd -x $i
 	printf "dhcp exit process for '$i'\n"
 
+	sudo systemctl stop dhcpcd.service
 	sudo pkill dhcpcd
 	printf "dhcpcd process terminated\n"
+	systemctl status dhcpcd.service
 	echo
 
 }
@@ -111,10 +115,12 @@ kill_ip () {
 
 	sudo ip link set $i down
 	printf "device '$i' state set down\n"
+	sleep 3
 	echo
 
 	sudo ip a flush $i
 	printf "ip a flushed\n"
+	sleep 3
 	echo
 
 }

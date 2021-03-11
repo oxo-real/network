@@ -327,6 +327,8 @@ wireless_network_select() {
 
 wpa_supp() {
 
+	sudo systemctl start wpa_supplicant.service
+	systemctl status wpa_supplicant.service
 	sudo wpa_supplicant -B -i $interface -c $wl_conf
 	echo
 
@@ -335,6 +337,8 @@ wpa_supp() {
 
 dhcp_connect() {
 
+	sudo systemctl start dhcpcd.service
+	systemctl status dhcpcd.service
 	sudo dhcpcd -w $interface
 
 	echo
@@ -422,6 +426,28 @@ unblock_radios() {
 }
 
 
+connect_protonvpn() {
+
+    printf "attemp to connect to a protonvpn? "
+    #reply_single_hidden
+    reply_single_hidden_timed
+	echo
+
+    if printf "$reply" | grep -iq "^n" ; then
+
+		return
+
+	else
+
+		sleep 3
+		sudo protonvpn c --cc SE -p udp
+		sleep 3
+		protonvpn s
+
+	fi
+
+}
+
 #read_flags #doesn't work in function block
 create_temp_dir
 [[ -n $show ]] && splash_screen
@@ -436,3 +462,4 @@ dhcp_connect
 #enable_dns
 wl_info
 show_ipa_diff
+connect_protonvpn
