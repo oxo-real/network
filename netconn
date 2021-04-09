@@ -184,6 +184,26 @@ select_interface() {
     # select interface
     ip a
     echo
+
+	if [ -z "$show_default_interface" ]; then
+
+		printf "${RED}no default interface${NOC}, press o to override "
+
+		reply_single_hidden_timed
+
+		if [ "$reply" == "o" ]; then
+
+			echo
+
+		else
+
+			exit
+
+		fi
+
+	fi
+
+
     printf "enter preferred interface number [$show_default_interface]: "
     #reply_single_hidden
     reply_single_hidden_timed
@@ -339,7 +359,7 @@ dhcp_connect() {
 
 	sudo systemctl start dhcpcd.service
 	systemctl status dhcpcd.service
-	sudo dhcpcd -w $interface
+	sudo dhcpcd --waitip $interface
 
 	echo
 	printf "getting host information from dhcp server\n"
@@ -363,12 +383,13 @@ dhcp_connect() {
 
 	fi
 
+	sleep 3
 	# give dhcpcd some time to connect before pinging
 	# otherwise ping is too early with packet loss
-	sleep 5
-	echo
-	ping -c 1 9.9.9.9
-	echo
+	#sleep 5
+	#echo
+	#ping -c 1 9.9.9.9
+	#echo
 	ip a
 
 }
@@ -428,7 +449,8 @@ unblock_radios() {
 
 connect_protonvpn() {
 
-    printf "attemp to connect to a protonvpn? "
+	echo
+    printf "connect vpn? "
     #reply_single_hidden
     reply_single_hidden_timed
 	echo

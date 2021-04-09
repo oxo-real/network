@@ -94,17 +94,21 @@ kill_wpa_supp() {
 
 kill_dhcpcd() {
 
-	sudo dhcpcd -k $i
-	printf "dhcp release message sent to '$i'\n"
-	printf "dhcp client daemon cache cleared\n"
-	echo
+#	sudo dhcpcd -k $i
+#	printf "dhcp release message sent to '$i'\n"
+#	printf "dhcp client daemon cache cleared\n"
+#	echo
 
-	sudo dhcpcd -x $i
-	printf "dhcp exit process for '$i'\n"
+#	sudo dhcpcd -x $i
+#	printf "dhcp exit process for '$i'\n"
 
+#	sudo pkill dhcpcd
+#	printf "dhcpcd process terminated\n"
+
+#	sudo systemctl restart dhcpcd.service
+	sleep 2
 	sudo systemctl stop dhcpcd.service
-	sudo pkill dhcpcd
-	printf "dhcpcd process terminated\n"
+	sleep 2
 	systemctl status dhcpcd.service
 	echo
 
@@ -135,13 +139,14 @@ block_radios() {
 protonvpn_disconnect() {
 
 	## protonvpn
-	#if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
+	if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
 
 		printf "disconnecting protonvpn...\n"
 		sudo protonvpn d
-		protonvpn s
 
-	#fi
+	fi
+
+	protonvpn s
 
 }
 
