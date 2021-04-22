@@ -115,7 +115,7 @@ kill_dhcpcd() {
 }
 
 
-kill_ip () {
+kill_ip() {
 
 	sudo ip link set $i down
 	printf "device '$i' state set down\n"
@@ -151,10 +151,33 @@ protonvpn_disconnect() {
 }
 
 
+data_rxtx() {
+
+	#get data
+	data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
+	data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
+
+	#show data
+	echo
+	printf "interface $i traffic statistics (bytes):\n"
+	printf "rx: $data_rx_i\n"
+	printf "tx: $data_tx_i\n"
+	echo
+
+}
+
 # retrieve interface variable
-#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
-source_ip="9.9.9.9"
-i=$(ip route get $source_ip | awk '{print $5}')
+get_interface() {
+
+	#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+	source_ip="9.9.9.9"
+	i=$(ip route get $source_ip | awk '{print $5}')
+
+}
+
+get_interface
+
+data_rxtx
 
 stop_dns_service
 

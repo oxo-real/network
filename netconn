@@ -359,38 +359,39 @@ dhcp_connect() {
 
 	sudo systemctl start dhcpcd.service
 	systemctl status dhcpcd.service
-	sudo dhcpcd --waitip $interface
+	sudo dhcpcd $interface
+	#sudo dhcpcd -w $interface
+	#sudo dhcpcd --waitip $interface
 
 	echo
 	printf "getting host information from dhcp server\n"
 	printf "configuring network interface $interface\n"
 	#printf "writing DNS configuration to resolvconf\n"
 	#resolvconf -i
+	sleep 3
+
 	echo
 	printf "checking if interface $interface reports a working carrier\n"
 	printf "trying to obtain a lease, then forking to background\n"
+	sleep 3
 
 	if [ $? -eq 0 ]; then
 
+		echo
 		printf "interface ${GREEN}'$interface' connected${NOC}\n"
 		printf "dhcpcd daemonizing...\n"
 
 	else
 
+		echo
 		printf "${RED}$interface not able to obtain lease${NOC}\n"
 		printf "exiting\n"
 		exit
 
 	fi
 
-	sleep 3
-	# give dhcpcd some time to connect before pinging
-	# otherwise ping is too early with packet loss
-	#sleep 5
-	#echo
-	#ping -c 1 9.9.9.9
-	#echo
-	ip a
+	echo
+	#ip a
 
 }
 
@@ -412,9 +413,36 @@ wl_info() {
 
 	fi
 
-	exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+}
 
-	printf "external ip: ${YELLOW}$exip${NOC}\n"
+
+ext_ip_info(){
+
+	#exip=$(protonvpn s | grep IP: | awk '{print $2}')
+	#exip=$(curl -4 https://ifconfig.io)
+	#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+
+	#[DEV]
+	#printf "exip: $exip\n"
+
+	try=1
+	while [[ -z $exip ]]; do
+
+		sleep 2
+		let try++
+		#exip=$(protonvpn s | grep IP: | awk '{print $2}')
+		exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+
+		#[DEV]
+		printf "try: $try\n"
+		printf "exip: $exip\n"
+
+		[ $try -ge 10 ] && return
+
+	done
+
+	#printf "external ip: ${YELLOW}$exip${NOC}\n"
+	protonvpn s
 
 }
 
@@ -450,7 +478,7 @@ unblock_radios() {
 connect_protonvpn() {
 
 	echo
-    printf "connect vpn? "
+    printf "connecting vpn, press n to abort "
     #reply_single_hidden
     reply_single_hidden_timed
 	echo
@@ -483,5 +511,6 @@ wireless_network_select
 dhcp_connect
 #enable_dns
 wl_info
+ext_ip_info
 show_ipa_diff
 connect_protonvpn
