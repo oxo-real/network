@@ -29,6 +29,10 @@ developer="cytopyge"
 initial_release_year=2019
 source_dir="$XDG_DATA_HOME/git/code/sources/functions"
 temp_dir="$XDG_CACHE_HOME/temp"
+netkill="$XDG_DATA_HOME/git/code/netconn/netkill"
+hostname="myip.opendns.com"
+server1="resolver1.opendns.com"
+server2="resolver2.opendns.com"
 
 
 # general function definitions
@@ -55,7 +59,7 @@ while getopts ":k:w:sh" opt; do
 		k)
 			## -k netkill
 			networks=${OPTARG}
-                	sh $HOME/_git/code/netconn/netkill
+                	sh $netkill
 			exit 0
 			;;
 
@@ -127,7 +131,7 @@ run_netkill() {
 
 			clear
     	    printf "running netkill...\n"
-    	    sh $HOME/_git/code/netconn/netkill
+    	    sh $netkill
     	    echo
 
 		else
@@ -422,16 +426,23 @@ ext_ip_info(){
 	#exip=$(curl -4 https://ifconfig.io)
 	#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
 
-	#[DEV]
-	#printf "exip: $exip\n"
+	printf "obtaining external ip address...\n"
 
 	try=1
 	while [[ -z $exip ]]; do
 
-		sleep 2
+		sleep 1
 		let try++
+		exip=$(host "$hostname" "$server1" | \
+			tail -n 1 | rev | cut -d ' ' -f 1 | rev)
+		#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
 		#exip=$(protonvpn s | grep IP: | awk '{print $2}')
-		exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+
+		sleep 1
+		if [[ -z $exip ]]; then
+			exip=$(host "$hostname" "$server2" | \
+				tail -n 1 | rev | cut -d ' ' -f 1 | rev)
+		fi
 
 		#[DEV]
 		printf "try: $try\n"
@@ -498,6 +509,16 @@ connect_protonvpn() {
 
 }
 
+
+waybar_reload()
+{
+	sleep 1
+	pkill waybar
+	sleep 1
+	sway exec waybar
+}
+
+
 #read_flags #doesn't work in function block
 create_temp_dir
 [[ -n $show ]] && splash_screen
@@ -513,4 +534,5 @@ dhcp_connect
 wl_info
 ext_ip_info
 show_ipa_diff
-connect_protonvpn
+#connect_protonvpn
+waybar_reload

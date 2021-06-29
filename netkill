@@ -27,6 +27,7 @@ initial_release_year=2019
 source_dir="$XDG_DATA_HOME/git/code/sources/functions"
 temp_dir="$XDG_CACHE_HOME/temp"
 
+source_ip="9.9.9.9"
 
 # general function definitions
 
@@ -139,12 +140,12 @@ block_radios() {
 protonvpn_disconnect() {
 
 	## protonvpn
-	if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
+	#if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
 
 		printf "disconnecting protonvpn...\n"
 		sudo protonvpn d
 
-	fi
+	#fi
 
 	protonvpn s
 
@@ -159,7 +160,7 @@ data_rxtx() {
 
 	#show data
 	echo
-	printf "interface $i traffic statistics (bytes):\n"
+	printf "$i interface traffic statistics (bytes):\n"
 	printf "rx: $data_rx_i\n"
 	printf "tx: $data_tx_i\n"
 	echo
@@ -170,8 +171,13 @@ data_rxtx() {
 get_interface() {
 
 	#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
-	source_ip="9.9.9.9"
 	i=$(ip route get $source_ip | awk '{print $5}')
+
+	if [[ -z $i ]]; then
+
+		exit
+
+	fi
 
 }
 
@@ -253,7 +259,9 @@ printf "* "
 ping -c 1 $source_ip
 printf "however icmp can be locally blocked\n"
 #printf "* "
-ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
+ipex=$(host myip.opendns.com resolver2.opendns.com \
+	| tail -n 1 | rev | cut -d ' ' -f 1 | rev)
+#ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
 [[ -z $ipex ]] \
 	&& printf "* via opendns.com no external ip address detected\n" \
 	|| printf "${RED}* external ip address still reads: $ipex${NOC}\n"
