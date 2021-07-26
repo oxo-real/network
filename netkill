@@ -181,6 +181,14 @@ data_rxtx() {
 # retrieve interface variable
 get_interface() {
 
+	#[TODO]
+	# if more than one interface active (state UNKNOWN, no lo interface)
+	if [ -n "$(ip a | grep -iv loopback | grep -i unknown)" ]; then
+		printf "an interface state is unknown\n"
+		printf "re-run netkill after this instance\n"
+		sleep 2
+	fi
+
 	#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
 	i=$(ip route get $source_ip | awk '{print $5}')
 
@@ -303,12 +311,12 @@ echo
 rfkill
 echo
 printf "netkill complete\n"
+
+cleanup()
+{
+	rm $temp_dir/"$t0"_netkill.tmp
+	rm $temp_dir/"$t1"_netkill.tmp
+}
+
+cleanup
 exit
-
-
-#[TODO]
-# if more than one device active
-if [ -n $(ip a | grep -iv loopback | grep unknown) ]; then
-	printf "a device state is unknown\n"
-	printf "try running netkill\n"
-fi
