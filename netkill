@@ -58,6 +58,15 @@ t0=`date +%Y%m%d_%H%M%S`
 ip a > $temp_dir/"$t0"_netkill.tmp
 
 
+netistat()
+{
+
+	sh $XDG_DATA_HOME/git/code/tools/netistat
+	echo
+
+}
+
+
 stop_dns_service() {
 
 	sudo systemctl stop systemd-resolved.service
@@ -200,11 +209,12 @@ get_interface() {
 
 }
 
+
+netistat
 get_interface
-
 data_rxtx
-
 stop_dns_service
+
 
 # interface connection not active
 if [ -z "$i" ]; then
@@ -319,4 +329,5 @@ cleanup()
 }
 
 cleanup
+netistat
 exit

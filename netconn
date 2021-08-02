@@ -117,6 +117,15 @@ create_temp_dir() {
 }
 
 
+netistat()
+{
+
+	sh $XDG_DATA_HOME/git/code/tools/netistat
+	echo
+
+}
+
+
 run_netkill() {
 
     export from_netconn=1
@@ -428,19 +437,19 @@ ext_ip_info(){
 
 	printf "obtaining external ip address...\n"
 
-	try=1
+	try=0
 	while [[ -z $exip ]]; do
 
 		sleep 1
 		let try++
-		exip=$(host "$hostname" "$server1" | \
+		exip=$(host "$hostname" "$server1" 2>&1 | \
 			tail -n 1 | rev | cut -d ' ' -f 1 | rev)
 		#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
 		#exip=$(protonvpn s | grep IP: | awk '{print $2}')
 
 		sleep 1
 		if [[ -z $exip ]]; then
-			exip=$(host "$hostname" "$server2" | \
+			exip=$(host "$hostname" "$server2" 2>&1 | \
 				tail -n 1 | rev | cut -d ' ' -f 1 | rev)
 		fi
 
@@ -467,8 +476,12 @@ show_ipa_diff() {
 
 	# diff gives exit status code 1 if files are different
 	# therefore we can't execute an && after netconn
-	# this is the (ugly) repair #[TODO] neater solution
+	# this is the (ugly) repair
+	#[TODO] find a neater solution
 	echo > /dev/null
+
+	# newline
+	echo
 
 }
 
@@ -523,6 +536,7 @@ waybar_reload()
 create_temp_dir
 [[ -n $show ]] && splash_screen
 get_sudo
+netistat
 run_netkill
 select_interface
 unblock_radios
@@ -535,4 +549,5 @@ wl_info
 ext_ip_info
 show_ipa_diff
 #connect_protonvpn
-waybar_reload
+#waybar_reload
+netistat
