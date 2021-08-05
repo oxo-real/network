@@ -550,4 +550,5 @@ ext_ip_info
 show_ipa_diff
 #connect_protonvpn
 #waybar_reload
+sleep 2
 netistat
