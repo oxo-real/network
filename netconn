@@ -462,7 +462,7 @@ ext_ip_info(){
 	done
 
 	#printf "external ip: ${YELLOW}$exip${NOC}\n"
-	protonvpn s
+	#protonvpn s
 
 }
 

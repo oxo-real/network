@@ -210,7 +210,7 @@ get_interface() {
 }
 
 
-netistat
+#netistat
 get_interface
 data_rxtx
 stop_dns_service
@@ -329,5 +329,5 @@ cleanup()
 }
 
 cleanup
-netistat
+#netistat
 exit
