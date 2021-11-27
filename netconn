@@ -12,9 +12,10 @@
 ###   /      |  /  _|
 ###
 ### netconn
+###
 ### (dis)connect to a network..., the right way
 ###
-### usage: netconn [-w <config.wifi>]
+### usage: netconn [-k] [-s] [-h] [-w <wl_conf>]
 ###
 ### (c) 2019 - 2021 cytopyge
 ###
@@ -98,36 +99,32 @@ done
 # specific function definitions
 
 
-get_cursor_pos() {
-
+get_cursor_pos()
+{
     #[TODO] countdown timer
     # Usage: get_cursor_pos
     IFS='[;' read -p $'\e[6n' -d R -rs _ y x _
     printf '%s\n' "$x $y"
-
 }
 
 
-create_temp_dir() {
-
+create_temp_dir()
+{
 	[[ -d $temp_dir ]] || mkdir -pv $temp_dir
 	t0=`date +%Y%m%d_%H%M%S`
 	ip a > $temp_dir/'$t0'_netconn.tmp
-
 }
 
 
 netistat()
 {
-
 	sh $XDG_DATA_HOME/git/code/tools/netistat
 	echo
-
 }
 
 
-run_netkill() {
-
+run_netkill()
+{
     export from_netconn=1
 
     if [ -n "$(ip -br a | grep -i up)" ]; then
@@ -155,12 +152,11 @@ run_netkill() {
 
     unset from_netconn
     sleep 1
-
 }
 
 
-select_interface() {
-
+select_interface()
+{
     # show default interface
     if [ -n "$wl_conf" ]; then
 
@@ -278,7 +274,7 @@ select_interface() {
     if [ ${interface:0:1} == 'wl' ] && [ -z $wl_conf ]; then
 
 		echo
-		printf "${RED}no wireless configuration allocated for '$interface'${NOC}\n"
+		printf "${RED}no wireless configuration allocated for $interface${NOC}\n"
 		printf "${RED}point to a valid configuration with the 'w' flag'${NOC}\n"
 		printf "exiting...\n"
 		exit
@@ -289,7 +285,7 @@ select_interface() {
     echo
     ip a | grep $interface
     echo
-    printf "connect via interface '$interface'? (Y/n) "
+    printf "connect via interface $interface? (Y/n) "
     reply_single_hidden_timed
 
     if printf "$reply" | grep -iq "^n" ; then
@@ -300,41 +296,36 @@ select_interface() {
 
 		echo
         echo
-        printf "interface '$interface' selected\n"
+        printf "interface ${GREEN}$interface${NOC} selected\n"
 		sleep 0.5
 		echo
 
 	fi
-
 }
 
 
-set_interface_up() {
-
+set_interface_up()
+{
 	sleep 0.5
-
-	printf "bringing interface '$interface' up ... "
 
 	sudo ip link set $interface up
 
 	if [ $? -eq 0  ]; then
 
-		printf "${GREEN}success${NOC}\n"
+		printf "interface $interface ${GREEN}up${NOC}\n"
 		echo
 
 	else
 
-		echo
-		printf "${RED}error, unable to bring $interface up${NOC}\n"
+		printf "interface $interface ip link ${RED}error${NOC}\n"
 		printf "exiting\n"
 
 	fi
-
 }
 
 
-check_wireless_interface() {
-
+check_wireless_interface()
+{
 	wireless=0
 
 	if [[ $interface == wl* ]]; then
@@ -342,34 +333,31 @@ check_wireless_interface() {
 		wireless=1
 
 	fi
-
 }
 
 
-wireless_network_select() {
-
+wireless_network_select()
+{
 	if [ $wireless == 1 ]; then
 
 		# select wireless network from list
 		wpa_supp
 
 	fi
-
 }
 
 
-wpa_supp() {
-
+wpa_supp()
+{
 	sudo systemctl start wpa_supplicant.service
 	systemctl status wpa_supplicant.service
 	sudo wpa_supplicant -B -i $interface -c $wl_conf
 	echo
-
 }
 
 
-dhcp_connect() {
-
+dhcp_connect()
+{
 	sudo systemctl start dhcpcd.service
 	systemctl status dhcpcd.service
 	sudo dhcpcd $interface
@@ -391,7 +379,7 @@ dhcp_connect() {
 	if [ $? -eq 0 ]; then
 
 		echo
-		printf "interface ${GREEN}'$interface' connected${NOC}\n"
+		printf "interface $interface ${GREEN}connected${NOC}\n"
 		printf "dhcpcd daemonizing...\n"
 
 	else
@@ -404,33 +392,29 @@ dhcp_connect() {
 	fi
 
 	echo
-	#ip a
-
 }
 
 
-enable_dns() {
-
+enable_dns()
+{
 	# systemd dns resolving service
 	sudo systemctl start systemd-resolved.service
-
 }
 
 
-wl_info() {
-
+wl_info()
+{
 	if [ $wireless == 1 ]; then
 
 		echo
 		iwconfig $interface
 
 	fi
-
 }
 
 
-ext_ip_info(){
-
+ext_ip_info()
+{
 	#exip=$(protonvpn s | grep IP: | awk '{print $2}')
 	#exip=$(curl -4 https://ifconfig.io)
 	#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
@@ -463,12 +447,11 @@ ext_ip_info(){
 
 	#printf "external ip: ${YELLOW}$exip${NOC}\n"
 	#protonvpn s
-
 }
 
 
-show_ipa_diff() {
-
+show_ipa_diff()
+{
 	t1=`date +%Y%m%d_%H%M%S`
 	ip a > $temp_dir/'$t1'_netconn.tmp
 
@@ -482,12 +465,11 @@ show_ipa_diff() {
 
 	# newline
 	echo
-
 }
 
 
-unblock_radios() {
-
+unblock_radios()
+{
 	if [[ ${interface:0:2} == 'wl' ]]; then
 
 		sudo rfkill unblock wlan
@@ -495,12 +477,11 @@ unblock_radios() {
 		echo
 
 	fi
-
 }
 
 
-connect_protonvpn() {
-
+connect_protonvpn()
+{
 	echo
     printf "connecting vpn, press n to abort "
     #reply_single_hidden
@@ -519,7 +500,6 @@ connect_protonvpn() {
 		protonvpn s
 
 	fi
-
 }
 
 
