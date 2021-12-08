@@ -81,13 +81,13 @@ while getopts ":k:w:sh" opt; do
 			;;
 
 		\?)
-			printf "netconn: ${RED}invalid option: -${OPTARG}${NOC}"
+			printf "netconn: ${MAGENTA}invalid option: -${OPTARG}${NOC}"
 			exit 1
 			;;
 
 		:)
 			## display help
-			printf "netconn: ${RED}option -${OPTARG} requires an argument${NOC}"
+			printf "netconn: ${MAGENTA}option -${OPTARG} requires an argument${NOC}"
 			exit 1
 			;;
 
@@ -196,7 +196,7 @@ select_interface()
 
 	if [ -z "$show_default_interface" ]; then
 
-		printf "${RED}no default interface${NOC}, press o to override "
+		printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override "
 
 		reply_single_hidden_timed
 
@@ -251,7 +251,7 @@ select_interface()
 
 		else
 
-			printf "${RED}no valid interface received, please try again${NOC}\n"
+			printf "${MAGENTA}no valid interface received, please try again${NOC}\n"
 		    sleep 0.5
 		    select_interface
 
@@ -274,8 +274,8 @@ select_interface()
     if [ ${interface:0:1} == 'wl' ] && [ -z $wl_conf ]; then
 
 		echo
-		printf "${RED}no wireless configuration allocated for $interface${NOC}\n"
-		printf "${RED}point to a valid configuration with the 'w' flag'${NOC}\n"
+		printf "${MAGENTA}no wireless configuration allocated for $interface${NOC}\n"
+		printf "${MAGENTA}point to a valid configuration with the 'w' flag'${NOC}\n"
 		printf "exiting...\n"
 		exit
 
@@ -296,7 +296,7 @@ select_interface()
 
 		echo
         echo
-        printf "interface ${GREEN}$interface${NOC} selected\n"
+        printf "interface ${BLUE}$interface${NOC} selected\n"
 		sleep 0.5
 		echo
 
@@ -312,12 +312,12 @@ set_interface_up()
 
 	if [ $? -eq 0  ]; then
 
-		printf "interface $interface ${GREEN}up${NOC}\n"
+		printf "interface $interface ${BLUE}up${NOC}\n"
 		echo
 
 	else
 
-		printf "interface $interface ip link ${RED}error${NOC}\n"
+		printf "interface $interface ip link ${MAGENTA}error${NOC}\n"
 		printf "exiting\n"
 
 	fi
@@ -379,13 +379,13 @@ dhcp_connect()
 	if [ $? -eq 0 ]; then
 
 		echo
-		printf "interface $interface ${GREEN}connected${NOC}\n"
+		printf "interface $interface ${BLUE}connected${NOC}\n"
 		printf "dhcpcd daemonizing...\n"
 
 	else
 
 		echo
-		printf "${RED}$interface not able to obtain lease${NOC}\n"
+		printf "${MAGENTA}$interface not able to obtain lease${NOC}\n"
 		printf "exiting\n"
 		exit
 
