@@ -53,7 +53,7 @@ source $source_dir/get_sudo
 
 # read_flags
 
-while getopts ":k:w:sh" opt; do
+while getopts ":k:w:shq" opt; do
 
 	case $opt in
 
@@ -80,6 +80,11 @@ while getopts ":k:w:sh" opt; do
 			exit 0
 			;;
 
+		q)
+			## -q quiet
+			quiet=1
+			;;
+
 		\?)
 			printf "netconn: ${MAGENTA}invalid option: -${OPTARG}${NOC}"
 			exit 1
@@ -97,6 +102,22 @@ done
 
 
 # specific function definitions
+
+
+become_quiet()
+{
+	stty_0=$(stty -g)
+	tput civis
+	stty raw -echo
+}
+
+
+unquiet()
+{
+	stty $stty_0
+	tput cnorm
+	printf "[TEST]unquiet did run\n"
+}
 
 
 get_cursor_pos()
@@ -206,7 +227,8 @@ select_interface()
 
 		else
 
-			exit
+			unquiet
+			exit 10
 
 		fi
 
@@ -503,32 +525,46 @@ connect_protonvpn()
 }
 
 
-waybar_reload()
+connect()
 {
-	sleep 1
-	pkill waybar
-	sleep 1
-	sway exec waybar
+	create_temp_dir
+	[[ -n $show ]] && splash_screen
+	get_sudo
+	netistat
+	run_netkill
+	select_interface
+	unblock_radios
+	set_interface_up
+	check_wireless_interface
+	wireless_network_select
+	dhcp_connect
+	#enable_dns
+	wl_info
+	ext_ip_info
+	show_ipa_diff
+	#connect_protonvpn
+	sleep 2
+	netistat
 }
 
 
-#read_flags #doesn't work in function block
-create_temp_dir
-[[ -n $show ]] && splash_screen
-get_sudo
-netistat
-run_netkill
-select_interface
-unblock_radios
-set_interface_up
-check_wireless_interface
-wireless_network_select
-dhcp_connect
-#enable_dns
-wl_info
-ext_ip_info
-show_ipa_diff
-#connect_protonvpn
-#waybar_reload
-sleep 2
-netistat
+case $quiet in
+
+	1)
+		get_sudo
+		#become_quiet
+		{
+			connect
+		} 1>/dev/null 2>&1
+		#exec >/dev/null
+		#exec 2>&1
+		#connect
+		#unquiet
+		exit
+		;;
+
+	*)
+		connect
+		;;
+
+esac
