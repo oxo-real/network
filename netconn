@@ -137,10 +137,19 @@ create_temp_dir()
 }
 
 
-netistat()
+netistat_1()
 {
-	sh $XDG_DATA_HOME/git/code/tools/netistat
-	echo
+	net_1=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+}
+
+netistat_0()
+{
+	net_0=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+}
+
+netistat_d()
+{
+	diff <(echo "$net_0") <(echo "$net_1")
 }
 
 
@@ -530,7 +539,7 @@ connect()
 	create_temp_dir
 	[[ -n $show ]] && splash_screen
 	get_sudo
-	netistat
+	netistat_0
 	run_netkill
 	select_interface
 	unblock_radios
@@ -544,7 +553,8 @@ connect()
 	show_ipa_diff
 	#connect_protonvpn
 	sleep 2
-	netistat
+	netistat_1
+	netistat_d
 }
 
 

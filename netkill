@@ -58,12 +58,19 @@ t0=`date +%Y%m%d_%H%M%S`
 ip a > $temp_dir/"$t0"_netkill.tmp
 
 
-netistat()
+netistat_0()
 {
+	net_0=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+}
 
-	sh $XDG_DATA_HOME/git/code/tools/netistat
-	echo
+netistat_1()
+{
+	net_1=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+}
 
+netistat_d()
+{
+	diff <(echo "$net_0") <(echo "$net_1")
 }
 
 
@@ -210,7 +217,7 @@ get_interface() {
 }
 
 
-#netistat
+netistat_0
 get_interface
 data_rxtx
 stop_dns_service
@@ -329,5 +336,6 @@ cleanup()
 }
 
 cleanup
-#netistat
+netistat_1
+netistat_d
 exit
