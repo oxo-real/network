@@ -492,7 +492,8 @@ show_ipa_diff()
 	# therefore we can't execute an && after netconn
 	# this is the (ugly) repair
 	#[TODO] find a neater solution
-	echo > /dev/null
+	printf ''
+	#echo > /dev/null
 
 	# newline
 	echo
