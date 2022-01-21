@@ -226,7 +226,7 @@ select_interface()
 
 	if [ -z "$show_default_interface" ]; then
 
-		printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override "
+		printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
 
 		reply_single_hidden_timed
 
