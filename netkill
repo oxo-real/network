@@ -24,7 +24,7 @@
 script_name="netkill"
 developer="cytopyge"
 initial_release_year=2019
-source_dir="$XDG_DATA_HOME/git/code/sources/functions"
+source_dir="$XDG_DATA_HOME/c/git/code/sources/functions"
 temp_dir="$XDG_CACHE_HOME/temp"
 
 source_ip="9.9.9.9"

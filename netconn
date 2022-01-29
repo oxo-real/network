@@ -28,9 +28,11 @@
 script_name="netconn"
 developer="cytopyge"
 initial_release_year=2019
-source_dir="$XDG_DATA_HOME/git/code/sources/functions"
+source_dir="$XDG_DATA_HOME/c/git/code/sources/functions"
+netkill="$XDG_DATA_HOME/c/git/code/netconn/netkill"
+netistat="$XDG_DATA_HOME/c/git/code/tools/netistat"
 temp_dir="$XDG_CACHE_HOME/temp"
-netkill="$XDG_DATA_HOME/git/code/netconn/netkill"
+
 hostname="myip.opendns.com"
 server1="resolver1.opendns.com"
 server2="resolver2.opendns.com"
@@ -139,17 +141,19 @@ create_temp_dir()
 
 netistat_1()
 {
-	net_1=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+	net_1=$(sh $netistat)
 }
 
 netistat_0()
 {
-	net_0=$(sh $XDG_DATA_HOME/git/code/tools/netistat)
+	net_0=$(sh $netistat)
 }
 
 netistat_d()
 {
 	diff <(echo "$net_0") <(echo "$net_1")
+	# diffs exits with code 1
+	printf '' >/dev/null 2>&1
 }
 
 
@@ -488,15 +492,8 @@ show_ipa_diff()
 
 	diff $temp_dir/'$t0'_netconn.tmp $temp_dir/'$t1'_netconn.tmp
 
-	# diff gives exit status code 1 if files are different
-	# therefore we can't execute an && after netconn
-	# this is the (ugly) repair
-	#[TODO] find a neater solution
-	printf ''
-	#echo > /dev/null
-
-	# newline
-	echo
+	# diffs exits with code 1
+	printf '' >/dev/null 2>&1
 }
 
 
