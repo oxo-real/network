@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 ##
 ###             _
@@ -6,50 +6,70 @@
 ### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \
 ### | | | |  __/ || (_| (_) | | | | | | |
 ### |_| |_|\___|\__\___\___/|_| |_|_| |_|
-###
 ###  _ _|_ _ ._    _  _
 ### (_\/|_(_)|_)\/(_|(/_
 ###   /      |  /  _|
 ###
 ### netconn
+### (dis)connect to a network
+### copyright (c) 2019 - 2022  |  cytopyge
 ###
-### (dis)connect to a network..., the right way
+### GNU GPLv3 GENERAL PUBLIC LICENSE
+### This program is free software: you can redistribute it and/or modify
+### it under the terms of the GNU General Public License as published by
+### the Free Software Foundation, either version 3 of the License, or
+### (at your option) any later version.
 ###
-### usage: netconn [-k] [-s] [-h] [-w <wl_conf>]
+### This program is distributed in the hope that it will be useful,
+### but WITHOUT ANY WARRANTY; without even the implied warranty of
+### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+### GNU General Public License for more details.
 ###
-### (c) 2019 - 2021 cytopyge
+### You should have received a copy of the GNU General Public License
+### along with this program.  If not, see <https://www.gnu.org/licenses/>.
+### https://www.gnu.org/licenses/gpl-3.0.txt
+###
+### y3l0b3b5z2u=:matrix.org @cytopyge@mastodon.social
 ###
 ##
 #
 
+## dependencies
+#	$source_dir
 
-# script specific constants
+## usage
+#	netconn
 
-script_name="netconn"
-developer="cytopyge"
-initial_release_year=2019
-source_dir="$XDG_DATA_HOME/c/git/code/sources/functions"
+## example
+#	none
+
+
+# initial definitions
+
+## script
+script_name='netconn'
+developer='cytopyge'
+license='gplv3'
+initial_release='2019'
+
+## hardcoded variables
+source_dir="$XDG_DATA_HOME/c/git/code/source/function"
 netkill="$XDG_DATA_HOME/c/git/code/netconn/netkill"
-netistat="$XDG_DATA_HOME/c/git/code/tools/netistat"
+netistat="$XDG_DATA_HOME/c/git/code/tool/netistat"
 temp_dir="$XDG_CACHE_HOME/temp"
 
-hostname="myip.opendns.com"
-server1="resolver1.opendns.com"
-server2="resolver2.opendns.com"
+hostname='myip.opendns.com'
+server1='resolver1.opendns.com'
+server2='resolver2.opendns.com'
 
 
-# general function definitions
+#--------------------------------
 
-## define colors
+
+# sourcing
 source $source_dir/text_appearance
-
-## reply functions
 source $source_dir/reply_functions
-
-## initial_screen
 source $source_dir/splash_screen
-
-## user authentication
 source $source_dir/get_sudo
 
 
