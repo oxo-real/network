@@ -24,11 +24,11 @@
 script_name="netkill"
 developer="cytopyge"
 initial_release_year=2019
-source_dir="$XDG_DATA_HOME/c/git/code/sources/functions"
+source_dir="$XDG_DATA_HOME/c/git/code/source/function"
 temp_dir="$XDG_CACHE_HOME/temp"
 
 source_ip="9.9.9.9"
-netistat="$XDG_DATA_HOME/c/git/code/tools/netistat"
+netistat="$XDG_DATA_HOME/c/git/code/tool/netistat"
 
 # general function definitions
 
@@ -304,7 +304,7 @@ disconnect_protonvpn()
 	protonvpn_disconnect
 }
 
-disconnect_protonvpn
+#disconnect_protonvpn
 
 
 rfkill_radios()
