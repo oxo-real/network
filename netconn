@@ -185,7 +185,7 @@ run_netkill()
 
     	printf "disconnect current network connection? (y/N) "
     	#reply_single_hidden
-    	reply_single_hidden_timed
+    	reply_read_single_hidden_timed
 
 		if printf "$reply" | grep -iq "^y" ; then
 
@@ -252,7 +252,7 @@ select_interface()
 
 		printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
 
-		reply_single_hidden_timed
+		reply_read_single_hidden_timed
 
 		if [ "$reply" == "o" ]; then
 
@@ -270,7 +270,7 @@ select_interface()
 
     printf "enter preferred interface number [$show_default_interface]: "
     #reply_single_hidden
-    reply_single_hidden_timed
+    reply_read_single_hidden_timed
 
     ## if no entry then when wl_conf<>0; then
 	##	search wireless devices in ip a and select one that is up
@@ -326,7 +326,7 @@ select_interface()
 	fi
 
     ## if interface is wireless, check for entered wireless network flag
-    if [ ${interface:0:1} == 'wl' ] && [ -z $wl_conf ]; then
+    if [[ ${interface:0:1} == 'wl' ]] && [ -z $wl_conf ]; then
 
 		echo
 		printf "${MAGENTA}no wireless configuration allocated for $interface${NOC}\n"
@@ -341,7 +341,8 @@ select_interface()
     ip a | grep $interface
     echo
     printf "connect via interface $interface? (Y/n) "
-    reply_single_hidden_timed
+    reply_read_single_hidden_timed
+    #reply_single_hidden_timed
 
     if printf "$reply" | grep -iq "^n" ; then
 
@@ -534,7 +535,7 @@ connect_protonvpn()
 	echo
     printf "connecting vpn, press n to abort "
     #reply_single_hidden
-    reply_single_hidden_timed
+    reply_read_single_hidden_timed
 	echo
 
     if printf "$reply" | grep -iq "^n" ; then
