@@ -161,12 +161,12 @@ create_temp_dir()
 
 netistat_1()
 {
-	net_1=$(sh $netistat)
+    net_1=$(sh $netistat)
 }
 
 netistat_0()
 {
-	net_0=$(sh $netistat)
+    net_0=$(sh $netistat)
 }
 
 netistat_d()
