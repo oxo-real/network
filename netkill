@@ -6,14 +6,12 @@
 ### | '_ \ / _ \ __| |/ / | | |
 ### | | | |  __/ |_|   <| | | |
 ### |_| |_|\___|\__|_|\_\_|_|_|
-###
-###  _ _|_ _ ._    _  _
-### (_\/|_(_)|_)\/(_|(/_
-###   /      |  /  _|
+###  _    _
+### (_)><(_)
 ###
 ### netkill
 ### thoroughly kill a network connection
-### (c) 2019 - 2021 cytopyge
+### (c) 2019 - 2021  |  oxo
 ###
 ##
 #
@@ -22,7 +20,7 @@
 # script specific constants
 
 script_name="netkill"
-developer="cytopyge"
+developer="oxo"
 initial_release_year=2019
 source_dir="$XDG_DATA_HOME/c/git/code/source/function"
 temp_dir="$XDG_CACHE_HOME/temp"
@@ -55,7 +53,6 @@ permission()
 
 	fi
 }
-permission
 
 
 temp_dir()
@@ -64,7 +61,6 @@ temp_dir()
 	t0=`date +%Y%m%d_%H%M%S`
 	ip a > $temp_dir/"$t0"_netkill.tmp
 }
-temp_dir
 
 
 netistat_0()
@@ -185,6 +181,7 @@ protonvpn_disconnect()
 
 data_rxtx()
 {
+    #TODO add uptime
 	#get data
 	data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
 	data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
@@ -219,11 +216,6 @@ get_interface()
 	fi
 }
 
-
-netistat_0
-get_interface
-data_rxtx
-stop_dns_service
 
 
 kill()
@@ -312,7 +304,6 @@ rfkill_radios()
 	block_radios
 }
 
-rfkill_radios
 
 
 human_info()
@@ -346,7 +337,6 @@ human_info()
 	printf "netkill complete\n"
 }
 
-human_info
 
 
 cleanup()
@@ -355,7 +345,20 @@ cleanup()
 	rm $temp_dir/"$t1"_netkill.tmp
 }
 
-cleanup
-netistat_1
-netistat_d
-exit
+
+main() {
+    permission
+    temp_dir
+    netistat_0
+    get_interface
+    data_rxtx
+    stop_dns_service
+    rfkill_radios
+    human_info
+    cleanup
+    netistat_1
+    netistat_d
+    exit
+}
+
+main
