@@ -4,7 +4,7 @@
 ###             _
 ###  _ __   ___| |_ ___ ___  _ __  _ __
 ### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \
-### | | | |  __/ || (_| (_) | | | | | | |
+    ### | | | |  __/ || (_| (_) | | | | | | |
 ### |_| |_|\___|\__\___\___/|_| |_|_| |_|
 ###  _    _
 ### (_)><(_)
@@ -76,48 +76,48 @@ source $source_dir/get_sudo
 
 while getopts ":k:s:wqh" opt; do
 
-	case $opt in
+    case $opt in
 
-		k)
-			## -k netkill
-			networks=${OPTARG}
-                	sh $netkill
-			exit 0
-			;;
+	k)
+	    ## -k netkill
+	    networks=${OPTARG}
+            sh $netkill
+	    exit 0
+	    ;;
 
-		s)
-			## -s show splash screen
-			show=1
-			;;
+	s)
+	    ## -s show splash screen
+	    show=1
+	    ;;
 
-		w)
-			## -w wireless network flag
-			wl_conf=${OPTARG}
-			;;
+	w)
+	    ## -w wireless network flag
+	    wl_conf=${OPTARG}
+	    ;;
 
-		q)
-			## -q quiet
-			quiet=1
-			;;
+	q)
+	    ## -q quiet
+	    quiet=1
+	    ;;
 
-		h)
-			## -h display help text
-			printf "netconn: usage: netconn [-w <config.wifi>]\n"
-			exit 0
-			;;
+	h)
+	    ## -h display help text
+	    printf "netconn: usage: netconn [-w <config.wifi>]\n"
+	    exit 0
+	    ;;
 
-		\?)
-			printf "netconn: ${MAGENTA}invalid option: -${OPTARG}${NOC}"
-			exit 1
-			;;
+	\?)
+	    printf "netconn: ${MAGENTA}invalid option: -${OPTARG}${NOC}"
+	    exit 1
+	    ;;
 
-		:)
-			## display help
-			printf "netconn: ${MAGENTA}option -${OPTARG} requires an argument${NOC}"
-			exit 1
-			;;
+	:)
+	    ## display help
+	    printf "netconn: ${MAGENTA}option -${OPTARG} requires an argument${NOC}"
+	    exit 1
+	    ;;
 
-	esac
+    esac
 
 done
 
@@ -127,17 +127,17 @@ done
 
 become_quiet()
 {
-	stty_0=$(stty -g)
-	tput civis
-	stty raw -echo
+    stty_0=$(stty -g)
+    tput civis
+    stty raw -echo
 }
 
 
 unquiet()
 {
-	stty $stty_0
-	tput cnorm
-	printf "[TEST]unquiet did run\n"
+    stty $stty_0
+    tput cnorm
+    printf "[TEST]unquiet did run\n"
 }
 
 
@@ -151,9 +151,9 @@ get_cursor_pos()
 
 create_temp_dir()
 {
-	[[ -d $temp_dir ]] || mkdir -pv $temp_dir
-	t0=$(date +%Y%m%d_%H%M%S)
-	ip a > $temp_dir/"$t0"_netconn.tmp
+    [[ -d $temp_dir ]] || mkdir -pv $temp_dir
+    t0=$(date +%Y%m%d_%H%M%S)
+    ip a > $temp_dir/"$t0"_netconn.tmp
 }
 
 
@@ -169,9 +169,9 @@ netistat_0()
 
 netistat_d()
 {
-	diff <(echo "$net_0") <(echo "$net_1")
-	# diffs exits with code 1
-	printf '' >/dev/null 2>&1
+    diff <(echo "$net_0") <(echo "$net_1")
+    # diffs exits with code 1
+    printf '' >/dev/null 2>&1
 }
 
 
@@ -185,22 +185,22 @@ run_netkill()
 
     	reply_read_single_hidden_timer
 
-	    if printf "$reply" | grep -iq "^y" ; then
+	if printf "$reply" | grep -iq "^y" ; then
 
-		clear
-		printf "running netkill...\n"
-		sh $netkill
-		echo
+	    clear
+	    printf "running netkill...\n"
+	    sh $netkill
+	    echo
 
-	    else
+	else
 
-		echo
-		printf "setting up connection...\n"
-		echo
-
-	    fi
+	    echo
+	    printf "setting up connection...\n"
+	    echo
 
 	fi
+
+    fi
 
     unset from_netconn
     sleep 1
@@ -212,36 +212,36 @@ select_interface()
     # show default interface
     if [ -n "$wl_conf" ]; then
 
-		## we do have a wl_conf flag
+	## we do have a wl_conf flag
 
-		## show wireless interface (wl*)
+	## show wireless interface (wl*)
 	#	## put show_default_interface in separate function
-		show_default_interface=$(ip a | \
-			grep '^[0-9]' |\
-			awk -F ': <' '{print $1}' |\
-			grep '^[0-9]\+:\swl')
+	show_default_interface=$(ip a | \
+				     grep '^[0-9]' |\
+				     awk -F ': <' '{print $1}' |\
+				     grep '^[0-9]\+:\swl')
 
     else
 
-		## no wl_conf flag entry
+	## no wl_conf flag entry
 
-		### show usb interface (enp*)
+	### show usb interface (enp*)
 	#	## put show_default_interface in separate function
-		show_default_interface=$(ip a | \
-			grep '^[0-9]' | \
-			awk -F ': <' '{print $1}' | \
-			grep '^[0-9]\+:\senp')
+	show_default_interface=$(ip a | \
+				     grep '^[0-9]' | \
+				     awk -F ': <' '{print $1}' | \
+				     grep '^[0-9]\+:\senp')
 
-		### show ethernet interface (eno*)
+	### show ethernet interface (eno*)
 	#	## put show_default_interface in separate function
-		if [ -n "$show_default_interface" ]; then
+	if [ -n "$show_default_interface" ]; then
 
-			show_default_interface=$(ip a | \
-				grep '^[0-9]' | \
-				awk -F ': <' '{print $1}' | \
-				grep '^[0-9]\+:\senp')
+	    show_default_interface=$(ip a | \
+					 grep '^[0-9]' | \
+					 awk -F ': <' '{print $1}' | \
+					 grep '^[0-9]\+:\senp')
 
-		fi
+	fi
 
     fi
 
@@ -249,24 +249,24 @@ select_interface()
     ip a
     echo
 
-	if [ -z "$show_default_interface" ]; then
+    if [ -z "$show_default_interface" ]; then
 
-		printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
+	printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
 
-		reply_read_single_hidden_timer
+	reply_read_single_hidden_timer
 
-		if [ "$reply" == "o" ]; then
+	if [ "$reply" == "o" ]; then
 
-			echo
+	    echo
 
-		else
+	else
 
-			unquiet
-			exit 10
-
-		fi
+	    unquiet
+	    exit 10
 
 	fi
+
+    fi
 
 
     printf "enter preferred interface number [$show_default_interface]: "
@@ -323,22 +323,22 @@ select_interface()
     ## derive interface from interface_number
     interface=$(ip a | grep "^$interface_number" | awk '{print $2}' | sed 's/://')
 
-	if [ -n "$auto_retrieved_interface" ]; then
+    if [ -n "$auto_retrieved_interface" ]; then
 
-		interface=$auto_retrieved_interface
+	interface=$auto_retrieved_interface
 
-	fi
+    fi
 
     ## if interface is wireless, check for entered wireless network flag
     if [[ ${interface:0:1} == 'wl' ]] && [ -z $wl_conf ]; then
 
-		echo
-		printf "${MAGENTA}no wireless configuration allocated for $interface${NOC}\n"
-		printf "${MAGENTA}point to a valid configuration with the 'w' flag'${NOC}\n"
-		printf "exiting...\n"
-		exit
+	echo
+	printf "${MAGENTA}no wireless configuration allocated for $interface${NOC}\n"
+	printf "${MAGENTA}point to a valid configuration with the 'w' flag'${NOC}\n"
+	printf "exiting...\n"
+	exit
 
-	fi
+    fi
 
     ## confirmation
     echo
@@ -349,253 +349,253 @@ select_interface()
 
     if printf "$reply" | grep -iq "^n" ; then
 
-		select_interface
+	select_interface
 
-	else
+    else
 
-		echo
+	echo
         echo
         printf "interface $interface ${BLUE}selected${NOC}\n"
-		sleep 0.5
-		echo
+	sleep 0.5
+	echo
 
-	fi
+    fi
 }
 
 
 set_interface_up()
 {
-	sleep 0.5
+    sleep 0.5
 
-	sudo ip link set $interface up
+    sudo ip link set $interface up
 
-	if [ $? -eq 0  ]; then
+    if [ $? -eq 0  ]; then
 
-		printf "interface $interface ${BLUE}running${NOC}\n"
-		echo
+	printf "interface $interface ${BLUE}running${NOC}\n"
+	echo
 
-	else
+    else
 
-		printf "interface $interface ip link ${MAGENTA}error${NOC}\n"
-		printf "exiting\n"
+	printf "interface $interface ip link ${MAGENTA}error${NOC}\n"
+	printf "exiting\n"
 
-	fi
+    fi
 }
 
 
 check_wireless_interface()
 {
-	wireless=0
+    wireless=0
 
-	if [[ $interface == wl* ]]; then
+    if [[ $interface == wl* ]]; then
 
-		wireless=1
+	wireless=1
 
-	fi
+    fi
 }
 
 
 wireless_network_select()
 {
-	if [ $wireless == 1 ]; then
+    if [ $wireless == 1 ]; then
 
-		# select wireless network from list
-		wpa_supp
+	# select wireless network from list
+	wpa_supp
 
-	fi
+    fi
 }
 
 
 wpa_supp()
 {
-	sudo systemctl start wpa_supplicant.service
-	systemctl status wpa_supplicant.service
-	sudo wpa_supplicant -B -i $interface -c $wl_conf
-	echo
+    sudo systemctl start wpa_supplicant.service
+    systemctl status wpa_supplicant.service
+    sudo wpa_supplicant -B -i $interface -c $wl_conf
+    echo
 }
 
 
 dhcp_connect()
 {
-	sudo systemctl start dhcpcd.service
-	systemctl status dhcpcd.service
-	sudo dhcpcd $interface
-	#sudo dhcpcd -w $interface
-	#sudo dhcpcd --waitip $interface
+    sudo systemctl start dhcpcd.service
+    systemctl status dhcpcd.service
+    sudo dhcpcd $interface
+    #sudo dhcpcd -w $interface
+    #sudo dhcpcd --waitip $interface
+
+    echo
+    printf "getting host information from dhcp server\n"
+    printf "configuring network interface $interface\n"
+    #printf "writing DNS configuration to resolvconf\n"
+    #resolvconf -i
+    sleep 3
+
+    echo
+    printf "checking if interface $interface reports a working carrier\n"
+    printf "trying to obtain a lease, then forking to background\n"
+    sleep 3
+
+    if [ $? -eq 0 ]; then
 
 	echo
-	printf "getting host information from dhcp server\n"
-	printf "configuring network interface $interface\n"
-	#printf "writing DNS configuration to resolvconf\n"
-	#resolvconf -i
-	sleep 3
+	printf "interface $interface ${BLUE}connected${NOC}\n"
+	printf "dhcpcd daemonizing...\n"
+
+    else
 
 	echo
-	printf "checking if interface $interface reports a working carrier\n"
-	printf "trying to obtain a lease, then forking to background\n"
-	sleep 3
+	printf "${MAGENTA}$interface not able to obtain lease${NOC}\n"
+	printf "exiting\n"
+	exit
 
-	if [ $? -eq 0 ]; then
+    fi
 
-		echo
-		printf "interface $interface ${BLUE}connected${NOC}\n"
-		printf "dhcpcd daemonizing...\n"
-
-	else
-
-		echo
-		printf "${MAGENTA}$interface not able to obtain lease${NOC}\n"
-		printf "exiting\n"
-		exit
-
-	fi
-
-	echo
+    echo
 }
 
 
 enable_dns()
 {
-	# systemd dns resolving service
-	sudo systemctl start systemd-resolved.service
+    # systemd dns resolving service
+    sudo systemctl start systemd-resolved.service
 }
 
 
 wl_info()
 {
-	if [ $wireless == 1 ]; then
+    if [ $wireless == 1 ]; then
 
-		echo
-		iwconfig $interface
+	echo
+	iwconfig $interface
 
-	fi
+    fi
 }
 
 
 ext_ip_info()
 {
-	#exip=$(protonvpn s | grep IP: | awk '{print $2}')
-	#exip=$(curl -4 https://ifconfig.io)
+    #exip=$(protonvpn s | grep IP: | awk '{print $2}')
+    #exip=$(curl -4 https://ifconfig.io)
+    #exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+
+    printf "obtaining external ip address...\n"
+
+    try=0
+    while [[ -z $exip ]]; do
+
+	sleep 1
+	let try++
+	exip=$(host "$hostname" "$server1" 2>&1 | \
+		   tail -n 1 | rev | cut -d ' ' -f 1 | rev)
 	#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+	#exip=$(protonvpn s | grep IP: | awk '{print $2}')
 
-	printf "obtaining external ip address...\n"
+	sleep 1
+	if [[ -z $exip ]]; then
+	    exip=$(host "$hostname" "$server2" 2>&1 | \
+		       tail -n 1 | rev | cut -d ' ' -f 1 | rev)
+	fi
 
-	try=0
-	while [[ -z $exip ]]; do
+	#[DEV]
+	printf "try: $try\n"
+	printf "exip: $exip\n"
 
-		sleep 1
-		let try++
-		exip=$(host "$hostname" "$server1" 2>&1 | \
-			tail -n 1 | rev | cut -d ' ' -f 1 | rev)
-		#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
-		#exip=$(protonvpn s | grep IP: | awk '{print $2}')
+	[ $try -ge 10 ] && return
 
-		sleep 1
-		if [[ -z $exip ]]; then
-			exip=$(host "$hostname" "$server2" 2>&1 | \
-				tail -n 1 | rev | cut -d ' ' -f 1 | rev)
-		fi
+    done
 
-		#[DEV]
-		printf "try: $try\n"
-		printf "exip: $exip\n"
-
-		[ $try -ge 10 ] && return
-
-	done
-
-	#printf "external ip: ${YELLOW}$exip${NOC}\n"
-	#protonvpn s
+    #printf "external ip: ${YELLOW}$exip${NOC}\n"
+    #protonvpn s
 }
 
 
 show_ipa_diff()
 {
-	t1=`date +%Y%m%d_%H%M%S`
-	ip a > $temp_dir/"$t1"_netconn.tmp
+    t1=`date +%Y%m%d_%H%M%S`
+    ip a > $temp_dir/"$t1"_netconn.tmp
 
-	diff $temp_dir/"$t0"_netconn.tmp $temp_dir/"$t1"_netconn.tmp
+    diff $temp_dir/"$t0"_netconn.tmp $temp_dir/"$t1"_netconn.tmp
 
-	# diffs exits with code 1
-	printf '' >/dev/null 2>&1
+    # diffs exits with code 1
+    printf '' >/dev/null 2>&1
 }
 
 
 unblock_radios()
 {
-	if [[ ${interface:0:2} == 'wl' ]]; then
+    if [[ ${interface:0:2} == 'wl' ]]; then
 
-		sudo rfkill unblock wlan
-		rfkill
-		echo
+	sudo rfkill unblock wlan
+	rfkill
+	echo
 
-	fi
+    fi
 }
 
 
 connect_protonvpn()
 {
-	echo
+    echo
     printf "connecting vpn, press n to abort "
     reply_read_single_hidden_timer
-	echo
+    echo
 
     if printf "$reply" | grep -iq "^n" ; then
 
-		return
+	return
 
-	else
+    else
 
-		sleep 3
-		sudo protonvpn c --cc SE -p udp
-		sleep 3
-		protonvpn s
+	sleep 3
+	sudo protonvpn c --cc SE -p udp
+	sleep 3
+	protonvpn s
 
-	fi
+    fi
 }
 
 
 connect()
 {
-	create_temp_dir
-	[[ -n $show ]] && splash_screen
-	get_sudo
-	netistat_0
-	run_netkill
-	select_interface
-	unblock_radios
-	set_interface_up
-	check_wireless_interface
-	wireless_network_select
-	dhcp_connect
-	#enable_dns
-	wl_info
-	ext_ip_info
-	show_ipa_diff
-	#connect_protonvpn
-	sleep 2
-	netistat_1
-	netistat_d
+    create_temp_dir
+    [[ -n $show ]] && splash_screen
+    get_sudo
+    netistat_0
+    run_netkill
+    select_interface
+    unblock_radios
+    set_interface_up
+    check_wireless_interface
+    wireless_network_select
+    dhcp_connect
+    #enable_dns
+    wl_info
+    ext_ip_info
+    show_ipa_diff
+    #connect_protonvpn
+    sleep 2
+    netistat_1
+    netistat_d
 }
 
 
 case $quiet in
 
-	1)
-		get_sudo
-		#become_quiet
-		{
-			connect
-		} 1>/dev/null 2>&1
-		#exec >/dev/null
-		#exec 2>&1
-		#connect
-		#unquiet
-		exit
-		;;
+    1)
+	get_sudo
+	#become_quiet
+	{
+	    connect
+	} 1>/dev/null 2>&1
+	#exec >/dev/null
+	#exec 2>&1
+	#connect
+	#unquiet
+	exit
+	;;
 
-	*)
-		connect
-		;;
+    *)
+	connect
+	;;
 
 esac

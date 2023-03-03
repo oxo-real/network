@@ -45,257 +45,257 @@ source $source_dir/get_sudo
 
 permission()
 {
-	# force permission if not from_netconn
-	if [ -z $from_netconn ]; then
+    # force permission if not from_netconn
+    if [ -z $from_netconn ]; then
 
-	    #splash_screen
-	    get_sudo
+	#splash_screen
+	get_sudo
 
-	fi
+    fi
 }
 
 
 temp_dir()
 {
-	[[ -d $temp_dir ]] || mkdir -pv $temp_dir
-	t0=$(date +%Y%m%d_%H%M%S)
-	#t0=`date +%Y%m%d_%H%M%S`
-	ip a > $temp_dir/"$t0"_netkill.tmp
+    [[ -d $temp_dir ]] || mkdir -pv $temp_dir
+    t0=$(date +%Y%m%d_%H%M%S)
+    #t0=`date +%Y%m%d_%H%M%S`
+    ip a > $temp_dir/"$t0"_netkill.tmp
 }
 
 
 netistat_0()
 {
-	net_0=$(sh $netistat)
+    net_0=$(sh $netistat)
 }
 
 netistat_1()
 {
-	net_1=$(sh $netistat)
+    net_1=$(sh $netistat)
 }
 
 netistat_d()
 {
-	diff <(echo "$net_0") <(echo "$net_1")
+    diff <(echo "$net_0") <(echo "$net_1")
 }
 
 
 stop_dns_service()
 {
-	sudo systemctl stop systemd-resolved.service
+    sudo systemctl stop systemd-resolved.service
 }
 
 
 kill_tunnel()
 {
-	## openvpn
-	openvpn --rmtun $i
-	printf "persistent tunnel removed\n"
+    ## openvpn
+    openvpn --rmtun $i
+    printf "persistent tunnel removed\n"
 
-	pkill openvpn
-	printf "openvpn process terminated\n"
+    pkill openvpn
+    printf "openvpn process terminated\n"
 
-	sleep 1
+    sleep 1
 
-	i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+    i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
 
-	echo
+    echo
 }
 
 
 kill_protonvpn()
 {
-	protonvpn d
-	sleep 2
-	protonvpn s
+    protonvpn d
+    sleep 2
+    protonvpn s
 
-	i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+    i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
 
 }
 
 
 kill_wpa_supp()
 {
-	sudo systemctl stop wpa_supplicant.service
-	sudo pkill wpa_supplicant
-	printf "wpa_supplicant process terminated\n"
-	systemctl status wpa_supplicant.service
-	echo
+    sudo systemctl stop wpa_supplicant.service
+    sudo pkill wpa_supplicant
+    printf "wpa_supplicant process terminated\n"
+    systemctl status wpa_supplicant.service
+    echo
 }
 
 
 kill_dhcpcd()
 {
-	#	sudo dhcpcd -k $i
-	#	printf "dhcp release message sent to '$i'\n"
-	#	printf "dhcp client daemon cache cleared\n"
-	#	echo
+    #	sudo dhcpcd -k $i
+    #	printf "dhcp release message sent to '$i'\n"
+    #	printf "dhcp client daemon cache cleared\n"
+    #	echo
 
-	#	sudo dhcpcd -x $i
-	#	printf "dhcp exit process for '$i'\n"
+    #	sudo dhcpcd -x $i
+    #	printf "dhcp exit process for '$i'\n"
 
-	#	sudo pkill dhcpcd
-	#	printf "dhcpcd process terminated\n"
+    #	sudo pkill dhcpcd
+    #	printf "dhcpcd process terminated\n"
 
-	#	sudo systemctl restart dhcpcd.service
-	sleep 2
-	sudo systemctl stop dhcpcd.service
-	sleep 2
-	systemctl status dhcpcd.service
-	echo
+    #	sudo systemctl restart dhcpcd.service
+    sleep 2
+    sudo systemctl stop dhcpcd.service
+    sleep 2
+    systemctl status dhcpcd.service
+    echo
 }
 
 
 kill_ip()
 {
-	sudo ip link set $i down
-	printf "device '$i' state set down\n"
-	sleep 3
-	echo
+    sudo ip link set $i down
+    printf "device '$i' state set down\n"
+    sleep 3
+    echo
 
-	sudo ip a flush $i
-	printf "ip a flushed\n"
-	sleep 3
-	echo
+    sudo ip a flush $i
+    printf "ip a flushed\n"
+    sleep 3
+    echo
 }
 
 
 block_radios()
 {
-	sudo rfkill block wlan
+    sudo rfkill block wlan
 }
 
 
 protonvpn_disconnect()
 {
-	## protonvpn
-	#if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
+    ## protonvpn
+    #if [[ -z $(protonvpn s | head -n 1 | grep Disconnected) ]]; then
 
-		printf "disconnecting protonvpn...\n"
-		protonvpn d
+    printf "disconnecting protonvpn...\n"
+    protonvpn d
 
-	#fi
+    #fi
 
-	protonvpn s
+    protonvpn s
 }
 
 
 data_rxtx()
 {
     #TODO add uptime
-	#get data
-	data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
-	data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
+    #get data
+    data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
+    data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
 
-	#show data
-	echo
-	printf "$i interface traffic statistics (bytes):\n"
-	printf "rx: $data_rx_i\n"
-	printf "tx: $data_tx_i\n"
-	echo
+    #show data
+    echo
+    printf "$i interface traffic statistics (bytes):\n"
+    printf "rx: $data_rx_i\n"
+    printf "tx: $data_tx_i\n"
+    echo
 
 }
 
 get_interface()
 {
-	# retrieve interface variable
-	#[TODO]
-	# if more than one interface active (state UNKNOWN, no lo interface)
-	if [ -n "$(ip a | grep -iv loopback | grep -i unknown)" ]; then
-		printf "an interface state is unknown\n"
-		printf "re-run netkill after this instance\n"
-		sleep 2
-	fi
+    # retrieve interface variable
+    #[TODO]
+    # if more than one interface active (state UNKNOWN, no lo interface)
+    if [ -n "$(ip a | grep -iv loopback | grep -i unknown)" ]; then
+	printf "an interface state is unknown\n"
+	printf "re-run netkill after this instance\n"
+	sleep 2
+    fi
 
-	#i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
-	i=$(ip route get $source_ip | awk '{print $5}')
+    #i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
+    i=$(ip route get $source_ip | awk '{print $5}')
 
-	if [[ -z $i ]]; then
+    if [[ -z $i ]]; then
 
-	    printf 'could not get interface\n'
-		exit 216
+	printf 'could not get interface\n'
+	exit 216
 
-	fi
+    fi
 }
 
 
 
 kill()
 {
-	# interface connection not active
-	if [ -z "$i" ]; then
-		printf "${RED}no active interface detected${NOC}\n"
-		printf "${YELLOW}interface is possibly already down${NOC}\n"
-		echo
+    # interface connection not active
+    if [ -z "$i" ]; then
+	printf "${RED}no active interface detected${NOC}\n"
+	printf "${YELLOW}interface is possibly already down${NOC}\n"
+	echo
 
-		kill_wpa_supp
-		kill_dhcpcd
-		kill_ip
+	kill_wpa_supp
+	kill_dhcpcd
+	kill_ip
 
-	fi
-
-
-	# interface connection type: ethernet
-	if [ "$(printf "$i" | cut -c 1)" = "e" ]; then
-		printf "interface connected: $i (ethernet)\n"
-		echo
-
-		kill_dhcpcd
-		kill_ip
-
-	fi
+    fi
 
 
-	# interface connection type: wireless
+    # interface connection type: ethernet
+    if [ "$(printf "$i" | cut -c 1)" = "e" ]; then
+	printf "interface connected: $i (ethernet)\n"
+	echo
+
+	kill_dhcpcd
+	kill_ip
+
+    fi
+
+
+    # interface connection type: wireless
+    if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
+	printf "interface connected: $i (wireless)\n"
+	echo
+
+	kill_wpa_supp
+	kill_dhcpcd
+	kill_ip
+
+    fi
+
+
+    # interface connection type: protonvpn
+    if [ "$(printf "$i" | cut -c 1)" = "p" ]; then
+	printf "interface connected: $i (protonvpn)\n"
+	echo
+
+	kill_protonvpn
+
 	if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
-		printf "interface connected: $i (wireless)\n"
-		echo
-
-		kill_wpa_supp
-		kill_dhcpcd
-		kill_ip
-
+	    kill_wpa_supp
 	fi
 
+	kill_dhcpcd
+	kill_ip
 
-	# interface connection type: protonvpn
-	if [ "$(printf "$i" | cut -c 1)" = "p" ]; then
-		printf "interface connected: $i (protonvpn)\n"
-		echo
+    fi
 
-		kill_protonvpn
 
-		if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
-			kill_wpa_supp
-		fi
+    # interface connection type: tunnel
+    if [ "$(printf "$i" | cut -c 1)" = "t" ]; then
+	printf "interface connected: $i (tunnel)\n"
+	echo
 
-		kill_dhcpcd
-		kill_ip
+	kill_tunnel
 
+	if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
+	    kill_wpa_supp
 	fi
 
+	kill_dhcpcd
+	kill_ip
 
-	# interface connection type: tunnel
-	if [ "$(printf "$i" | cut -c 1)" = "t" ]; then
-		printf "interface connected: $i (tunnel)\n"
-		echo
-
-		kill_tunnel
-
-		if [ "$(printf "$i" | cut -c 1)" = "w" ]; then
-			kill_wpa_supp
-		fi
-
-		kill_dhcpcd
-		kill_ip
-
-	fi
+    fi
 }
 
 
 disconnect_protonvpn()
 {
-	protonvpn_disconnect
+    protonvpn_disconnect
 }
 
 #disconnect_protonvpn
@@ -303,48 +303,48 @@ disconnect_protonvpn()
 
 rfkill_radios()
 {
-	block_radios
+    block_radios
 }
 
 
 
 human_info()
 {
-	# info for human
-	printf "verifying disconnect\n"
-	t1=`date +%Y%m%d_%H%M%S`
-	ip a > $temp_dir/"$t1"_netkill.tmp
+    # info for human
+    printf "verifying disconnect\n"
+    t1=`date +%Y%m%d_%H%M%S`
+    ip a > $temp_dir/"$t1"_netkill.tmp
 
-	diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp
+    diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp
 
-	#[DEV] to give interface time to shutdown
-	#[DEV] adn disconnect from ip address
-	sleep 3
+    #[DEV] to give interface time to shutdown
+    #[DEV] adn disconnect from ip address
+    sleep 3
 
-	printf "* "
-	ping -c 1 $source_ip
-	printf "however icmp can be locally blocked\n"
-	#printf "* "
-	ipex=$(host myip.opendns.com resolver2.opendns.com \
-		| tail -n 1 | rev | cut -d ' ' -f 1 | rev)
-	#ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
-	[[ -z $ipex ]] \
-		&& printf "* via opendns.com no external ip address detected\n" \
-		|| printf "${RED}* external ip address still reads: $ipex${NOC}\n"
+    printf "* "
+    ping -c 1 $source_ip
+    printf "however icmp can be locally blocked\n"
+    #printf "* "
+    ipex=$(host myip.opendns.com resolver2.opendns.com \
+	       | tail -n 1 | rev | cut -d ' ' -f 1 | rev)
+    #ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
+    [[ -z $ipex ]] \
+	&& printf "* via opendns.com no external ip address detected\n" \
+	    || printf "${RED}* external ip address still reads: $ipex${NOC}\n"
 
-	ip a
-	echo
-	rfkill
-	echo
-	printf "netkill complete\n"
+    ip a
+    echo
+    rfkill
+    echo
+    printf "netkill complete\n"
 }
 
 
 
 cleanup()
 {
-	rm $temp_dir/"$t0"_netkill.tmp
-	rm $temp_dir/"$t1"_netkill.tmp
+    rm $temp_dir/"$t0"_netkill.tmp
+    rm $temp_dir/"$t1"_netkill.tmp
 }
 
 
