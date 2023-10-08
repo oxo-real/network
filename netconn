@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#! /usr/bin/env sh
 #
 ##
 ###             _
 ###  _ __   ___| |_ ___ ___  _ __  _ __
 ### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \
-    ### | | | |  __/ || (_| (_) | | | | | | |
+### | | | |  __/ || (_| (_) | | | | | | |
 ### |_| |_|\___|\__\___\___/|_| |_|_| |_|
 ###  _    _
 ### (_)><(_)
@@ -74,7 +74,8 @@ source $source_dir/get_sudo
 
 # read_flags
 
-while getopts ":k:s:wqh" opt; do
+optstring=":k:sw:qh"
+while getopts "$optstring" opt; do
 
     case $opt in
 
@@ -107,13 +108,14 @@ while getopts ":k:s:wqh" opt; do
 	    ;;
 
 	\?)
-	    printf "netconn: ${MAGENTA}invalid option: -${OPTARG}${NOC}"
+	    ## non existing opts will be send here
+	    printf "netconn: ${AMBER}invalid option: -${OPTARG}${NOC}"
 	    exit 1
 	    ;;
 
 	:)
 	    ## display help
-	    printf "netconn: ${MAGENTA}option -${OPTARG} requires an argument${NOC}"
+	    printf "netconn: ${AMBER}option -${OPTARG} requires an argument${NOC}"
 	    exit 1
 	    ;;
 
@@ -137,7 +139,6 @@ unquiet()
 {
     stty $stty_0
     tput cnorm
-    printf "[TEST]unquiet did run\n"
 }
 
 
@@ -154,6 +155,12 @@ create_temp_dir()
     [[ -d $temp_dir ]] || mkdir -pv $temp_dir
     t0=$(date +%Y%m%d_%H%M%S)
     ip a > $temp_dir/"$t0"_netconn.tmp
+}
+
+
+cleanup_temp()
+{
+    rm -rf $temp_dir/*_netconn.tmp
 }
 
 
@@ -207,15 +214,16 @@ run_netkill()
 }
 
 
-select_interface()
+show_default_interface()
 {
     # show default interface
-    if [ -n "$wl_conf" ]; then
+    if [[ -n "$wl_conf" ]]; then
 
 	## we do have a wl_conf flag
 
+	printf "DEV217\n"
+
 	## show wireless interface (wl*)
-	#	## put show_default_interface in separate function
 	show_default_interface=$(ip a | \
 				     grep '^[0-9]' |\
 				     awk -F ': <' '{print $1}' |\
@@ -226,16 +234,15 @@ select_interface()
 	## no wl_conf flag entry
 
 	### show usb interface (enp*)
-	#	## put show_default_interface in separate function
 	show_default_interface=$(ip a | \
 				     grep '^[0-9]' | \
 				     awk -F ': <' '{print $1}' | \
 				     grep '^[0-9]\+:\senp')
 
 	### show ethernet interface (eno*)
-	#	## put show_default_interface in separate function
 	if [ -n "$show_default_interface" ]; then
 
+	    # DEV [TODO]<<< is the same?
 	    show_default_interface=$(ip a | \
 					 grep '^[0-9]' | \
 					 awk -F ': <' '{print $1}' | \
@@ -244,6 +251,12 @@ select_interface()
 	fi
 
     fi
+}
+
+
+select_interface()
+{
+    show_default_interface
 
     # select interface
     ip a
@@ -251,7 +264,7 @@ select_interface()
 
     if [ -z "$show_default_interface" ]; then
 
-	printf "${MAGENTA}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
+	printf "${AMBER}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
 
 	reply_read_single_hidden_timer
 
@@ -273,7 +286,7 @@ select_interface()
     reply_read_single_hidden_timer
 
     ## if no entry then when wl_conf<>0; then
-    ##	search wireless devices in ip a and select one that is up
+    ##  search wireless devices in ip a and select one that is up
     ## -n -> var length greater than 0
     ## -z -> var length equals 0
     if [ "$reply" == $'\x0a' ]; then
@@ -310,7 +323,7 @@ select_interface()
 
 	else
 
-	    printf "${MAGENTA}no valid interface received, please try again${NOC}\n"
+	    printf "${AMBER}no valid interface received, please try again${NOC}\n"
 	    sleep 0.5
 	    select_interface
 
@@ -333,8 +346,8 @@ select_interface()
     if [[ ${interface:0:1} == 'wl' ]] && [ -z $wl_conf ]; then
 
 	echo
-	printf "${MAGENTA}no wireless configuration allocated for $interface${NOC}\n"
-	printf "${MAGENTA}point to a valid configuration with the 'w' flag'${NOC}\n"
+	printf "no wireless configuration allocated for ${RED}$interface${NOC}\n"
+	printf "point to a valid configuration with the 'w' flag'\n"
 	printf "exiting...\n"
 	exit
 
@@ -376,7 +389,7 @@ set_interface_up()
 
     else
 
-	printf "interface $interface ip link ${MAGENTA}error${NOC}\n"
+	printf "interface ${RED}$interface${NOC} ip link error\n"
 	printf "exiting\n"
 
     fi
@@ -410,13 +423,14 @@ wpa_supp()
 {
     sudo systemctl start wpa_supplicant.service
     systemctl status wpa_supplicant.service
-    sudo wpa_supplicant -B -i $interface -c $wl_conf
+    sudo wpa_supplicant -B -i "$interface" -c "$wl_conf"
     echo
 }
 
 
 dhcp_connect()
 {
+    # DEV service does not exist (install dhcpcd?)
     sudo systemctl start dhcpcd.service
     systemctl status dhcpcd.service
     sudo dhcpcd $interface
@@ -444,7 +458,7 @@ dhcp_connect()
     else
 
 	echo
-	printf "${MAGENTA}$interface not able to obtain lease${NOC}\n"
+	printf "${RED}$interface${NOC} not able to obtain lease\n"
 	printf "exiting\n"
 	exit
 
@@ -474,37 +488,37 @@ wl_info()
 
 ext_ip_info()
 {
-    #exip=$(protonvpn s | grep IP: | awk '{print $2}')
-    #exip=$(curl -4 https://ifconfig.io)
-    #exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+    #ipex=$(protonvpn s | grep IP: | awk '{print $2}')
+    #ipex=$(curl -4 https://ifconfig.io)
+    #ipex=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
 
     printf "obtaining external ip address...\n"
 
     try=0
-    while [[ -z $exip ]]; do
+    while [[ -z $ipex ]]; do
 
 	sleep 1
 	let try++
-	exip=$(host "$hostname" "$server1" 2>&1 | \
+	ipex=$(host "$hostname" "$server1" 2>&1 | \
 		   tail -n 1 | rev | cut -d ' ' -f 1 | rev)
-	#exip=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
-	#exip=$(protonvpn s | grep IP: | awk '{print $2}')
+	#ipex=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
+	#ipex=$(protonvpn s | grep IP: | awk '{print $2}')
 
 	sleep 1
-	if [[ -z $exip ]]; then
-	    exip=$(host "$hostname" "$server2" 2>&1 | \
+	if [[ -z $ipex ]]; then
+	    ipex=$(host "$hostname" "$server2" 2>&1 | \
 		       tail -n 1 | rev | cut -d ' ' -f 1 | rev)
 	fi
 
 	#[DEV]
 	printf "try: $try\n"
-	printf "exip: $exip\n"
+	printf "ipex: $ipex\n"
 
 	[ $try -ge 10 ] && return
 
     done
 
-    #printf "external ip: ${YELLOW}$exip${NOC}\n"
+    #printf "external ip: ${YELLOW}$ipex${NOC}\n"
     #protonvpn s
 }
 
@@ -576,6 +590,7 @@ connect()
     sleep 2
     netistat_1
     netistat_d
+    cleanup_temp
 }
 
 
