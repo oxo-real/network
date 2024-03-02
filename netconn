@@ -6,12 +6,14 @@
 ### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \
 ### | | | |  __/ || (_| (_) | | | | | | |
 ### |_| |_|\___|\__\___\___/|_| |_|_| |_|
-###  _    _
-### (_)><(_)
+###
+### # # # # # #
+###      #
+### # # # # # #
 ###
 ### netconn
 ### (dis)connect to a network
-### copyright (c) 2019 - 2023  |  oxo
+### copyright (c) 2019 - 2024  |  oxo
 ###
 ### GNU GPLv3 GENERAL PUBLIC LICENSE
 ### This program is free software: you can redistribute it and/or modify
