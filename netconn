@@ -7,9 +7,9 @@
 ### | | | |  __/ || (_| (_) | | | | | | |
 ### |_| |_|\___|\__\___\___/|_| |_|_| |_|
 ###
-### # # # # # #
-###      #
-### # # # # # #
+###  # # # # # #
+###       #
+###  # # # # # #
 ###
 ### netconn
 ### (dis)connect to a network
@@ -111,13 +111,13 @@ while getopts "$optstring" opt; do
 
 	\?)
 	    ## non existing opts will be send here
-	    printf "netconn: ${AMBER}invalid option: -${OPTARG}${NOC}"
+	    printf "netconn: ${fg_amber}invalid option: -${OPTARG}${st_def}"
 	    exit 1
 	    ;;
 
 	:)
 	    ## display help
-	    printf "netconn: ${AMBER}option -${OPTARG} requires an argument${NOC}"
+	    printf "netconn: ${fg_amber}option -${OPTARG} requires an argument${st_def}"
 	    exit 1
 	    ;;
 
@@ -266,7 +266,7 @@ select_interface()
 
     if [ -z "$show_default_interface" ]; then
 
-	printf "${AMBER}no default interface${NOC}, press ${YELLOW}o${NOC} to override\n"
+	printf "${fg_amber}no default interface${st_def}, press ${fg_yellow}o${st_def} to override\n"
 
 	reply_read_single_hidden_timer
 
@@ -325,7 +325,7 @@ select_interface()
 
 	else
 
-	    printf "${AMBER}no valid interface received, please try again${NOC}\n"
+	    printf "${fg_amber}no valid interface received, please try again${st_def}\n"
 	    sleep 0.5
 	    select_interface
 
@@ -348,7 +348,7 @@ select_interface()
     if [[ ${interface:0:1} == 'wl' ]] && [ -z $wl_conf ]; then
 
 	echo
-	printf "no wireless configuration allocated for ${RED}$interface${NOC}\n"
+	printf "no wireless configuration allocated for ${fg_magenta}$interface${st_def}\n"
 	printf "point to a valid configuration with the 'w' flag'\n"
 	printf "exiting...\n"
 	exit
@@ -359,7 +359,7 @@ select_interface()
     echo
     ip a | grep $interface
     echo
-    printf "connect via interface ${BLUE}$interface?${NOC} (Y/n) "
+    printf "connect via interface ${fg_blue}$interface?${st_def} (Y/n) "
     reply_read_single_hidden_timer
 
     if printf "$reply" | grep -iq "^n" ; then
@@ -370,7 +370,7 @@ select_interface()
 
 	echo
         echo
-        printf "interface $interface ${BLUE}selected${NOC}\n"
+        printf "interface $interface ${fg_blue}selected${st_def}\n"
 	sleep 0.5
 	echo
 
@@ -386,12 +386,12 @@ set_interface_up()
 
     if [ $? -eq 0  ]; then
 
-	printf "interface $interface ${BLUE}running${NOC}\n"
+	printf "interface $interface ${fg_blue}running${st_def}\n"
 	echo
 
     else
 
-	printf "interface ${RED}$interface${NOC} ip link error\n"
+	printf "interface ${fg_magenta}$interface${st_def} ip link error\n"
 	printf "exiting\n"
 
     fi
@@ -454,13 +454,13 @@ dhcp_connect()
     if [ $? -eq 0 ]; then
 
 	echo
-	printf "interface $interface ${BLUE}connected${NOC}\n"
+	printf "interface $interface ${fg_blue}connected${st_def}\n"
 	printf "dhcpcd daemonizing...\n"
 
     else
 
 	echo
-	printf "${RED}$interface${NOC} not able to obtain lease\n"
+	printf "${fg_magenta}$interface${st_def} not able to obtain lease\n"
 	printf "exiting\n"
 	exit
 
@@ -520,7 +520,7 @@ ext_ip_info()
 
     done
 
-    #printf "external ip: ${YELLOW}$ipex${NOC}\n"
+    #printf "external ip: ${fg_yellow}$ipex${st_def}\n"
     #protonvpn s
 }
 
