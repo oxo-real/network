@@ -76,7 +76,8 @@ source $source_dir/get_sudo
 
 # read_flags
 
-optstring=":k:sw:qh"
+optstring=":k:swqh"
+#optstring=":k:sw:qh"
 while getopts "$optstring" opt; do
 
     case $opt in
@@ -266,7 +267,7 @@ select_interface()
 
     if [ -z "$show_default_interface" ]; then
 
-	printf "${fg_amber}no default interface${st_def}, press ${fg_yellow}o${st_def} to override\n"
+	printf "${fg_amber}no default interface${st_def}, ${fg_black}${bg_yellow}O${st_def}verride "
 
 	reply_read_single_hidden_timer
 
@@ -276,13 +277,13 @@ select_interface()
 
 	else
 
+	    echo
 	    unquiet
 	    exit 10
 
 	fi
 
     fi
-
 
     printf "enter preferred interface number [$show_default_interface]: "
     reply_read_single_hidden_timer
@@ -325,7 +326,7 @@ select_interface()
 
 	else
 
-	    printf "${fg_amber}no valid interface received, please try again${st_def}\n"
+	    printf "no valid ${fg_amber}interface${st_def} received, please try again\n"
 	    sleep 0.5
 	    select_interface
 
@@ -345,13 +346,13 @@ select_interface()
     fi
 
     ## if interface is wireless, check for entered wireless network flag
-    if [[ ${interface:0:1} == 'wl' ]] && [ -z $wl_conf ]; then
+#    if [[ ${interface:0:1} == 'wl' ]]; then
 
-	echo
-	printf "no wireless configuration allocated for ${fg_magenta}$interface${st_def}\n"
-	printf "point to a valid configuration with the 'w' flag'\n"
-	printf "exiting...\n"
-	exit
+    check_wireless_interface
+    if [[ $wireless == 1 ]]; then
+
+	## establish wireless connection
+	wl_connect
 
     fi
 
@@ -378,9 +379,26 @@ select_interface()
 }
 
 
+wl_connect()
+{
+    ## wireless connection without selected ssid
+    if [ -z $wl_conf ]; then
+
+	ssid_select
+	wl_conf_file_check
+
+    fi
+
+    unblock_radios
+    wl_connect
+}
+
+
 set_interface_up()
 {
     sleep 0.5
+
+    [[ $wireless == 1 ]] && unblock_radios
 
     sudo ip link set $interface up
 
@@ -410,18 +428,32 @@ check_wireless_interface()
 }
 
 
-wireless_network_select()
+ssid_select()
 {
-    if [ $wireless == 1 ]; then
+    ## select from available SSID's
+    ssid_list=$(sudo iw dev $interface scan | grep SSID | sort | uniq)
+    ssid=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf)
+}
 
-	# select wireless network from list
-	wpa_supp
+
+wl_conf_file_check()
+{
+    ## configuration file
+    wl_conf="$XDG_DATA_HOME/keys/wl/${ssid}.wifi"
+
+    if [[ ! -f $ssid_conf_file ]]; then
+
+	## no configuration file available for selected ssid
+	printf '%s\n' "$ssid"
+	wpa_passphrase "$ssid" > "$wl_conf"
+
+	#TODO no password open network
 
     fi
 }
 
 
-wpa_supp()
+wl_connect()
 {
     sudo systemctl start wpa_supplicant.service
     systemctl status wpa_supplicant.service
@@ -448,6 +480,8 @@ dhcp_connect()
 
     echo
     printf "checking if interface $interface reports a working carrier\n"
+    sleep 0.5
+    printf "using access point: ${fg_blue}$ssid${st_def}\n"
     printf "trying to obtain a lease, then forking to background\n"
     sleep 3
 
@@ -514,13 +548,12 @@ ext_ip_info()
 
 	#[DEV]
 	printf "try: $try\n"
-	printf "ipex: $ipex\n"
+	printf "external ip: ${fg_blue}$ipex${st_def}\n"
 
 	[ $try -ge 10 ] && return
 
     done
 
-    #printf "external ip: ${fg_yellow}$ipex${st_def}\n"
     #protonvpn s
 }
 
@@ -579,11 +612,14 @@ connect()
     netistat_0
     run_netkill
     select_interface
-    unblock_radios
+    #check_wireless_interface
     set_interface_up
-    check_wireless_interface
-    wireless_network_select
-    dhcp_connect
+
+   # unblock_radios
+   # wireless_network_select
+
+    #TODO also start dhcpcd for wireless?
+    #dhcp_connect
     #enable_dns
     wl_info
     ext_ip_info
