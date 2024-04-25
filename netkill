@@ -360,28 +360,32 @@ rfkill_radios()
 human_info()
 {
     # info for human
-    printf "${st_bold}verifying disconnect${st_def}\n"
-    echo
+    printf "${st_bold}verify disconnect${st_def}\n"
 
-    printf "${st_bold}1: ${st_def}"
+    sleep 1
+    printf "${st_bold}1${st_def}\n"
+
+    sleep 0.5
     t1=`date +%Y%m%d_%H%M%S`
     ip a > $temp_dir/"$t1"_netkill.tmp
 
-    diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp
+    diff $temp_dir/"$t0"_netkill.tmp $temp_dir/"$t1"_netkill.tmp && \
+	printf 'ip a: no diff\n'
 
-    #[DEV] to give interface time to shutdown
-    #[DEV] adn disconnect from ip address
-    sleep 3
-    echo
+    sleep 1
+    printf "${st_bold}2${st_def}\n"
 
-    printf "${st_bold}2: ${st_def}"
+    sleep 0.5
     #printf "* "
     ping -c 1 $source_ip
     printf "WARNING: ${st_bold}icmp${st_def} can however be locally blocked\n"
-    echo
 
     #printf "* "
-    printf "${st_bold}3: ${st_def}"
+
+    sleep 1
+    printf "${st_bold}3${st_def}\n"
+
+    sleep 0.5
     ipex=$(host myip.opendns.com resolver2.opendns.com \
 	       | tail -n 1 | rev | cut -d ' ' -f 1 | rev)
     #ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
@@ -389,14 +393,17 @@ human_info()
 	&& printf 'no external ip address detected\n' \
 	    || printf "external ip address still reads: ${fg_amber}%s${st_def}\n" "$ipex"
 
-    echo
-    printf "${st_bold}4: ${st_def}"
-    ip a
-    echo
+    sleep 1
+    printf "${st_bold}4${st_def}\n"
 
+    sleep 0.5
+    ip a
+
+    sleep 1
+    printf "${st_bold}5${st_def}\n"
+
+    sleep 0.5
     rfkill
-    echo
-    printf "netkill complete\n"
 }
 
 

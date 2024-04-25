@@ -69,6 +69,8 @@ hostname='myip.opendns.com'
 server1='resolver1.opendns.com'
 server2='resolver2.opendns.com'
 
+xckw="$XDG_DATA_HOME/c/keys/wl"
+
 
 #--------------------------------
 
@@ -104,6 +106,8 @@ while getopts "$optstring" opt; do
 	    ## -w wireless network flag
 	    wl_conf=${OPTARG}
 	    wireless=1
+	    shift
+	    wl_conf=$1
 	    ;;
 
 	q)
@@ -224,37 +228,47 @@ run_netkill()
 }
 
 
-show_default_interface()
+get_default_interface()
 {
-    # show default interface
+    ## show_default_interface (number and name)
+    ## example: '7: enp0s2f0u9u2'
+    i_avail="$(ip a | \
+		  grep '^[0-9]' | \
+		  awk -F ': <' '{print $1}')"
+
     if [[ $wireless -eq 1 ]]; then
 
-	## we do have a wl_conf flag
+	## we do have a wireless (-w) flag
 
 	## show wireless interface (wl*)
-	show_default_interface=$(ip a | \
-				     grep '^[0-9]' |\
-				     awk -F ': <' '{print $1}' |\
-				     grep '^[0-9]\+:\swl')
+	show_default_interface="$(printf "$i_avail" | \
+	grep '^[0-9]\+:\swl')"
 
     else
 
-	## no wl_conf flag entry
+	## no wireless (-w) flag entry
 
-	### show usb interface (enp*)
-	show_default_interface=$(ip a | \
-				     grep '^[0-9]' | \
-				     awk -F ': <' '{print $1}' | \
-				     grep '^[0-9]\+:\senp')
+	if [[ -z "$show_default_interface" ]]; then
 
-	### show ethernet interface (eno*)
-	if [ -n "$show_default_interface" ]; then
+	    ### show usb interface (enp*)
+	    show_default_interface="$(printf "$i_avail" | \
+	    grep '^[0-9]\+:\senp')"
 
-	    # DEV [TODO]<<< is the same?
-	    show_default_interface=$(ip a | \
-					 grep '^[0-9]' | \
-					 awk -F ': <' '{print $1}' | \
-					 grep '^[0-9]\+:\senp')
+	fi
+
+	if [[ -z "$show_default_interface" ]]; then
+
+	    ### show ethernet interface (eno*)
+	    show_default_interface="$(printf "$i_avail" | \
+	    grep '^[0-9]\+:\seno')"
+
+	fi
+
+	if [[ -z "$show_default_interface" ]]; then
+
+	    ## show wireless interface (wl*) (again, this is correct)
+	    show_default_interface="$(printf "$i_avail" | \
+	    grep '^[0-9]\+:\swl')"
 
 	fi
 
@@ -264,7 +278,7 @@ show_default_interface()
 
 select_interface()
 {
-    show_default_interface
+    get_default_interface
 
     # select interface
     ip a
@@ -296,47 +310,47 @@ select_interface()
     printf "enter preferred interface number [$show_default_interface]: "
     reply_read_single_hidden_timer
 
-    ## if no entry then when wl_conf<>0; then
+    ## if no entry then when wireless<>0; then
     ##  search wireless devices in ip a and select one that is up
     ## -n -> var length greater than 0
     ## -z -> var length equals 0
-    if [ "$reply" == $'\x0a' ]; then
+    if [[ "$reply" == $'\x0a' ]]; then
 
 	## enter as reply
 	interface_number=$(printf $show_default_interface | awk -F ':' '{print $1}')
 
-    elif [ -n "$reply" ]; then
+    elif [[ -n "$reply" ]]; then
 
 	## we have an explicit reply for interface
 	interface_number=$reply
 
-    elif [ -z "$reply" ] || [ "$reply" == "" ]; then
+    elif [[ -z "$reply" ]]; then
 
 	## no explicit reply for interface
-	if [ -n "$wl_conf" ]; then
+	if [[ "$wireless" -eq 1 ]]; then
 
-	    ## we do have a wl_conf flag
+	    ## we do have a wireless flag
 	    ## try to autoconnect via wireless interface
 	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^wl)
 
-	elif [ -z "$wl_conf" ]; then
+	elif [[ "$wireless" -ne 1 ]]; then
 
-	    ## we do not have a wl_conf flag
+	    ## we do not have a wireless flag
 	    ## try to autoconnect via ethernet (enp) interface
 	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^enp)
 
-	elif [ -z "$auto_retrieved_interface" ]; then
+	#elif [ -z "$auto_retrieved_interface" ]; then
 
-	    ## we do not have a wl_conf flag
-	    ## still no auto_retrieved_interface acquired
-	    ## try to autoconnect via ethernet (eno) interface
-	    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^eno)
+	#    ## we do not have a wireless flag
+	#    ## still no auto_retrieved_interface acquired
+	#    ## try to autoconnect via ethernet (eno) interface
+	#    auto_retrieved_interface=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep ^eno)
 
-	else
+	#else
 
-	    printf "no valid ${fg_amber}interface${st_def} received, please try again\n"
-	    sleep 0.5
-	    select_interface
+	#    printf "no valid ${fg_amber}interface${st_def} received, please try again\n"
+	#    sleep 0.5
+	#    select_interface
 
 	fi
 
@@ -388,10 +402,12 @@ select_interface()
 
 wl_connect()
 {
-    unblock_radios
+    unblock_radio
     set_interface_up
+    ## give interface some time to get up
+    sleep 2
 
-    ## wireless connection without selected ssid
+    ## wireless connection without explicit ssid
     if [ -z $wl_conf ]; then
 
 	ssid_select
@@ -400,6 +416,7 @@ wl_connect()
     fi
 
     supplicant_connect
+    wl_info
 }
 
 
@@ -417,19 +434,24 @@ check_wireless_interface()
 
 ssid_select()
 {
+    ## give iw dev some time to get up
+    ## therefore no direct pipe
+    iw_dev_list=$(sudo iw dev $interface scan)
     ## select from available SSID's
-    ssid_list=$(sudo iw dev $interface scan | grep SSID | sort | uniq | awk '{print $2}')
-    ssid_fzf=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf --prompt 'enter ssid: ')
-    ssid=$(printf '%s' $ssid_fzf | cut -f 2)
+    ssid_list=$(printf "$iw_dev_list" | grep SSID | sort | uniq | awk '{print $2}')
+    ssid_fzf=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf --prompt 'select an available ssid: ')
+    ssid=$(printf '%s' "$ssid_fzf" | cut -f 2)
 }
 
 
 wl_conf_file_check()
 {
     ## check for existing configuration file
-    wl_conf="$XDG_DATA_HOME/c/keys/wl/${ssid}.wifi"
+    ## directory is xckw
+    ## files generated by wpa_passphrase
+    wl_conf="${xckw}/${ssid}.wifi"
 
-    if [[ -n $ssid ]]; then
+    if [[ -n "$ssid" ]]; then
 
 	if [[ ! -f $wl_conf ]]; then
 
@@ -437,7 +459,15 @@ wl_conf_file_check()
 	    printf '%s ' "$ssid"
 	    wpa_passphrase "$ssid" > "$wl_conf"
 
-	    #TODO no password open network
+	    ## open network (connect w/o password)
+	    ## password left blank; wpa_passphrase made no wl_conf
+	    if [[ ! -f $wl_conf || ! -s $wl_conf ]]; then
+
+		## open network
+		printf "network={\nssid="$ssid"\nkey_mgmt=NONE\n}" > "$wl_conf"
+
+	    fi
+
 	fi
 
     else
@@ -594,7 +624,7 @@ show_ipa_diff()
 }
 
 
-unblock_radios()
+unblock_radio()
 {
     if [[ ${interface:0:2} == 'wl' ]]; then
 
@@ -642,7 +672,6 @@ connect()
     #TODO static_connect
     dhcp_connect
     #enable_dns
-    wl_info
     ext_ip_info
     show_ipa_diff
     #connect_protonvpn
