@@ -1,6 +1,5 @@
 #! /usr/bin/env sh
-#
-##
+
 ###             _
 ###  _ __   ___| |_ ___ ___  _ __  _ __
 ### | '_ \ / _ \ __/ __/ _ \| '_ \| '_ \
@@ -11,29 +10,29 @@
 ###       #
 ###  # # # # # #
 ###
-### netconn
-### (dis)connect to a network
-### copyright (c) 2019 - 2024  |  oxo
-###
-### GNU GPLv3 GENERAL PUBLIC LICENSE
-### This program is free software: you can redistribute it and/or modify
-### it under the terms of the GNU General Public License as published by
-### the Free Software Foundation, either version 3 of the License, or
-### (at your option) any later version.
-###
-### This program is distributed in the hope that it will be useful,
-### but WITHOUT ANY WARRANTY; without even the implied warranty of
-### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-### GNU General Public License for more details.
-###
-### You should have received a copy of the GNU General Public License
-### along with this program.  If not, see <https://www.gnu.org/licenses/>.
-### https://www.gnu.org/licenses/gpl-3.0.txt
-###
-### @oxo@qoto.org
-###
-##
-#
+
+: '
+netconn
+(dis)connect to a network
+copyright (c) 2019 - 2024  |  oxo
+
+GNU GPLv3 GENERAL PUBLIC LICENSE
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+https://www.gnu.org/licenses/gpl-3.0.txt
+
+@oxo@qoto.org
+
 
 ## dependencies
 #	$source_dir
@@ -43,6 +42,13 @@
 
 ## example
 #	none
+
+# '
+
+
+#set -o errexit
+#set -o nounset
+set -o pipefail
 
 
 # initial definitions
@@ -97,6 +103,7 @@ while getopts "$optstring" opt; do
 	w)
 	    ## -w wireless network flag
 	    wl_conf=${OPTARG}
+	    wireless=1
 	    ;;
 
 	q)
@@ -220,11 +227,9 @@ run_netkill()
 show_default_interface()
 {
     # show default interface
-    if [[ -n "$wl_conf" ]]; then
+    if [[ $wireless -eq 1 ]]; then
 
 	## we do have a wl_conf flag
-
-	printf "DEV217\n"
 
 	## show wireless interface (wl*)
 	show_default_interface=$(ip a | \
@@ -268,12 +273,15 @@ select_interface()
     if [ -z "$show_default_interface" ]; then
 
 	printf "${fg_amber}no default interface${st_def}, ${fg_black}${bg_yellow}O${st_def}verride "
-
 	reply_read_single_hidden_timer
 
-	if [ "$reply" == "o" ]; then
+	if [[ "$reply" == "o" || "$reply" == $'\x0a' ]]; then
 
 	    echo
+
+	elif [ "$reply" ~= "[:digit:]" ]; then
+
+	    interface_number=$reply
 
 	else
 
@@ -345,17 +353,6 @@ select_interface()
 
     fi
 
-    ## if interface is wireless, check for entered wireless network flag
-#    if [[ ${interface:0:1} == 'wl' ]]; then
-
-    check_wireless_interface
-    if [[ $wireless == 1 ]]; then
-
-	## establish wireless connection
-	wl_connect
-
-    fi
-
     ## confirmation
     echo
     ip a | grep $interface
@@ -376,11 +373,24 @@ select_interface()
 	echo
 
     fi
+
+    ## wireless subloop
+    check_wireless_interface
+
+    if [[ $wireless -eq 1 ]]; then
+
+	## establish wireless connection
+	wl_connect
+
+    fi
 }
 
 
 wl_connect()
 {
+    unblock_radios
+    set_interface_up
+
     ## wireless connection without selected ssid
     if [ -z $wl_conf ]; then
 
@@ -389,16 +399,68 @@ wl_connect()
 
     fi
 
-    unblock_radios
-    wl_connect
+    supplicant_connect
+}
+
+
+check_wireless_interface()
+{
+    #wireless=0
+
+    if [[ $interface == wl* ]]; then
+
+	wireless=1
+
+    fi
+}
+
+
+ssid_select()
+{
+    ## select from available SSID's
+    ssid_list=$(sudo iw dev $interface scan | grep SSID | sort | uniq | awk '{print $2}')
+    ssid_fzf=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf --prompt 'enter ssid: ')
+    ssid=$(printf '%s' $ssid_fzf | cut -f 2)
+}
+
+
+wl_conf_file_check()
+{
+    ## check for existing configuration file
+    wl_conf="$XDG_DATA_HOME/c/keys/wl/${ssid}.wifi"
+
+    if [[ -n $ssid ]]; then
+
+	if [[ ! -f $wl_conf ]]; then
+
+	    ## no configuration file available for selected ssid
+	    printf '%s ' "$ssid"
+	    wpa_passphrase "$ssid" > "$wl_conf"
+
+	    #TODO no password open network
+	fi
+
+    else
+
+	printf '%s\n' 'no ssid'
+	exit 47
+
+    fi
+}
+
+
+supplicant_connect()
+{
+    sudo systemctl start wpa_supplicant.service
+    systemctl status wpa_supplicant.service
+    sudo wpa_supplicant -B -i "$interface" -c "$wl_conf"
+    echo
 }
 
 
 set_interface_up()
 {
     sleep 0.5
-
-    [[ $wireless == 1 ]] && unblock_radios
 
     sudo ip link set $interface up
 
@@ -416,52 +478,6 @@ set_interface_up()
 }
 
 
-check_wireless_interface()
-{
-    wireless=0
-
-    if [[ $interface == wl* ]]; then
-
-	wireless=1
-
-    fi
-}
-
-
-ssid_select()
-{
-    ## select from available SSID's
-    ssid_list=$(sudo iw dev $interface scan | grep SSID | sort | uniq)
-    ssid=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf)
-}
-
-
-wl_conf_file_check()
-{
-    ## configuration file
-    wl_conf="$XDG_DATA_HOME/keys/wl/${ssid}.wifi"
-
-    if [[ ! -f $ssid_conf_file ]]; then
-
-	## no configuration file available for selected ssid
-	printf '%s\n' "$ssid"
-	wpa_passphrase "$ssid" > "$wl_conf"
-
-	#TODO no password open network
-
-    fi
-}
-
-
-wl_connect()
-{
-    sudo systemctl start wpa_supplicant.service
-    systemctl status wpa_supplicant.service
-    sudo wpa_supplicant -B -i "$interface" -c "$wl_conf"
-    echo
-}
-
-
 dhcp_connect()
 {
     # DEV service does not exist (install dhcpcd?)
@@ -476,12 +492,20 @@ dhcp_connect()
     printf "configuring network interface $interface\n"
     #printf "writing DNS configuration to resolvconf\n"
     #resolvconf -i
-    sleep 3
+    sleep 1.5
 
     echo
     printf "checking if interface $interface reports a working carrier\n"
     sleep 0.5
-    printf "using access point: ${fg_blue}$ssid${st_def}\n"
+
+    case $wireless in
+
+	1)
+	    printf "acquired access point: ${fg_blue}$ssid${st_def}\n"
+	    ;;
+
+    esac
+
     printf "trying to obtain a lease, then forking to background\n"
     sleep 3
 
@@ -513,7 +537,7 @@ enable_dns()
 
 wl_info()
 {
-    if [ $wireless == 1 ]; then
+    if [[ $wireless == 1 ]]; then
 
 	echo
 	iwconfig $interface
@@ -547,8 +571,8 @@ ext_ip_info()
 	fi
 
 	#[DEV]
-	printf "try: $try\n"
-	printf "external ip: ${fg_blue}$ipex${st_def}\n"
+	[[ $try -gt 1 ]] && printf "try: $try\n"
+	printf "current external ip address: ${fg_blue}$ipex${st_def}\n"
 
 	[ $try -ge 10 ] && return
 
@@ -612,14 +636,11 @@ connect()
     netistat_0
     run_netkill
     select_interface
-    #check_wireless_interface
+    #wireless subloop
     set_interface_up
 
-   # unblock_radios
-   # wireless_network_select
-
-    #TODO also start dhcpcd for wireless?
-    #dhcp_connect
+    #TODO static_connect
+    dhcp_connect
     #enable_dns
     wl_info
     ext_ip_info
@@ -637,9 +658,10 @@ case $quiet in
     1)
 	get_sudo
 	#become_quiet
-	{
-	    connect
-	} 1>/dev/null 2>&1
+	#{
+	#    connect
+	#} 1>/dev/null 2>&1
+	connect > /dev/null 2>&1
 	#exec >/dev/null
 	#exec 2>&1
 	#connect

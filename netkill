@@ -45,6 +45,11 @@ https://www.gnu.org/licenses/gpl-3.0.txt
 # '
 
 
+#set -o errexit
+#set -o nounset
+set -o pipefail
+
+
 # script specific constants
 
 script_name='netkill'
@@ -138,7 +143,6 @@ kill_protonvpn()
     protonvpn s
 
     i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
-
 }
 
 
@@ -146,7 +150,6 @@ kill_wpa_supp()
 {
     sudo systemctl stop wpa_supplicant.service
     sudo pkill wpa_supplicant
-    printf "wpa_supplicant process terminated\n"
     systemctl status wpa_supplicant.service
     echo
 }
@@ -166,7 +169,8 @@ kill_dhcpcd()
     #	printf "dhcpcd process terminated\n"
 
     #	sudo systemctl restart dhcpcd.service
-    sleep 2
+
+    #sleep 2
     sudo systemctl stop dhcpcd.service
     sleep 2
     systemctl status dhcpcd.service
@@ -177,13 +181,25 @@ kill_dhcpcd()
 kill_ip()
 {
     sudo ip link set $i down
-    printf "device '$i' state set down\n"
-    sleep 3
+
+    if [[ $? -eq 0 ]]; then
+
+	#sleep 2
+	printf "device %s state set ${fg_blue}down${st_def}\n" "$i"
+
+    fi
+
     echo
 
     sudo ip a flush $i
-    printf "ip a flushed\n"
-    sleep 3
+
+    if [[ $? -eq 0 ]]; then
+
+	#sleep 1.5
+	printf "ip a ${fg_blue}flushed${st_def}\n"
+
+    fi
+
     echo
 }
 
@@ -210,16 +226,25 @@ protonvpn_disconnect()
 
 data_rxtx()
 {
-    #TODO add uptime
-    #get data
-    data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
-    data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
+    if [[ -n $i ]]; then
+
+	#TODO add uptime
+	#get session traffic data (bytes)
+	data_rx_i=$(grep $i /proc/net/dev | awk '{print $2}')
+	data_tx_i=$(grep $i /proc/net/dev | awk '{print $10}')
+
+    else
+
+	[[ -z $data_rx_i ]] && data_rx_i='n/a'
+	[[ -z $data_tx_i ]] && data_tx_i='n/a'
+
+    fi
 
     #show data
     echo
-    printf "$i interface traffic statistics (bytes):\n"
-    printf "rx: $data_rx_i\n"
-    printf "tx: $data_tx_i\n"
+    printf "interface ${fg_blue}%s${st_def} session traffic statistics (bytes)\n" "$i"
+    printf 'rx: %s\n' "$data_rx_i"
+    printf 'tx: %s\n' "$data_tx_i"
     echo
 
 }
@@ -232,7 +257,7 @@ get_interface()
     if [ -n "$(ip a | grep -iv loopback | grep -i unknown)" ]; then
 	printf "an interface state is unknown\n"
 	printf "re-run netkill after this instance\n"
-	sleep 2
+	sleep 1
     fi
 
     #i=$(ip -o -4 route show to default | head -n 1 | awk '{print $5}')
@@ -240,8 +265,7 @@ get_interface()
 
     if [[ -z $i ]]; then
 
-	printf 'could not get interface\n'
-	exit 216
+	printf "no active ${fg_amber}interface${st_def} detected\n"
 
     fi
 }
@@ -252,9 +276,6 @@ kill()
 {
     # interface connection not active
     if [ -z "$i" ]; then
-	printf "${fg_magenta}no active interface detected${st_def}\n"
-	printf "${fg_yellow}interface is possibly already down${st_def}\n"
-	echo
 
 	kill_wpa_supp
 	kill_dhcpcd
@@ -339,7 +360,10 @@ rfkill_radios()
 human_info()
 {
     # info for human
-    printf "verifying disconnect\n"
+    printf "${st_bold}verifying disconnect${st_def}\n"
+    echo
+
+    printf "${st_bold}1: ${st_def}"
     t1=`date +%Y%m%d_%H%M%S`
     ip a > $temp_dir/"$t1"_netkill.tmp
 
@@ -348,20 +372,28 @@ human_info()
     #[DEV] to give interface time to shutdown
     #[DEV] adn disconnect from ip address
     sleep 3
+    echo
 
-    printf "* "
-    ping -c 1 $source_ip
-    printf "however icmp can be locally blocked\n"
+    printf "${st_bold}2: ${st_def}"
     #printf "* "
+    ping -c 1 $source_ip
+    printf "WARNING: ${st_bold}icmp${st_def} can however be locally blocked\n"
+    echo
+
+    #printf "* "
+    printf "${st_bold}3: ${st_def}"
     ipex=$(host myip.opendns.com resolver2.opendns.com \
 	       | tail -n 1 | rev | cut -d ' ' -f 1 | rev)
     #ipex=$(dig @resolver1.opendns.com myip.opendns.com +dnssec +short)
     [[ -z $ipex ]] \
-	&& printf "* via opendns.com no external ip address detected\n" \
-	    || printf "${fg_magenta}* external ip address still reads: $ipex${st_def}\n"
+	&& printf 'no external ip address detected\n' \
+	    || printf "external ip address still reads: ${fg_amber}%s${st_def}\n" "$ipex"
 
+    echo
+    printf "${st_bold}4: ${st_def}"
     ip a
     echo
+
     rfkill
     echo
     printf "netkill complete\n"
@@ -376,19 +408,21 @@ cleanup()
 }
 
 
-main() {
+main()
+{
     permission
     temp_dir
     netistat_0
     get_interface
     data_rxtx
     stop_dns_service
+    kill
     rfkill_radios
     human_info
     cleanup
     netistat_1
     netistat_d
-    exit
+    exit 0
 }
 
 main
