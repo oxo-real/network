@@ -673,7 +673,6 @@ connect()
     netistat_0
     run_netkill
     select_interface
-    #wireless subloop
     set_interface_up
 
     #TODO static_connect

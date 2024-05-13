@@ -1,5 +1,5 @@
 ```
-/home/oxo/.local/share/c/git/code/netconn
+/home/oxo/.local/share/c/git/code/network
 ├── netconn
 ├── netflow
 ├── netilist
