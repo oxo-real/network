@@ -1,0 +1,33 @@
+#! /usr/bin/env sh
+
+# select wl ssid
+
+## wireless interfaces
+wl_i_list=$(ip a | grep '^[0-9]' | awk -F ': ' '{print $2}' | grep '^w')
+wl_i_amt=$(printf '%s\n' "$wl_i_list" | wc -l)
+
+## select wl_i if there are more than one
+if [[ $wl_i_amt -gt 1 ]]; then
+
+    wl_i=$(printf "$wl_i_list" | fzf)
+
+elif [[ $wl_i_amt -eq 1 ]]; then
+
+    wl_i=$(printf '%s\n' "$wl_i_list")
+
+fi
+
+## scan for wireless accesspoints
+if [[ -n $wl_i ]]; then
+
+    i="$wl_i"
+
+    rfkill unblock wlan
+    sudo ip link set $i up
+
+    sudo iw dev $i scan | grep SSID | awk -F ': ' '{print $2}' | sort | uniq
+
+    sudo ip link set $i down
+    rfkill block wlan
+
+fi

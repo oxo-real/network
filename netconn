@@ -438,8 +438,8 @@ ssid_select()
     ## therefore no direct pipe
     iw_dev_list=$(sudo iw dev $interface scan)
     ## select from available SSID's
-    ssid_list=$(printf "$iw_dev_list" | grep SSID | sort | uniq | awk '{print $2}')
-    ssid_fzf=$(printf '%s\n%s' 'enter hidden ssid' "$ssid_list" | fzf --prompt 'select an available ssid: ')
+    ssid_list=$(printf '%s\n' "$iw_dev_list" | grep SSID | sort | uniq | awk '{print $2}')
+    ssid_fzf=$(printf '%s\n%s\n' 'enter hidden ssid' "$ssid_list" | fzf --prompt 'select an available ssid: ')
     ssid=$(printf '%s' "$ssid_fzf" | cut -f 2)
 }
 
@@ -460,11 +460,11 @@ wl_conf_file_check()
 	    wpa_passphrase "$ssid" > "$wl_conf"
 
 	    ## open network (connect w/o password)
-	    ## password left blank; wpa_passphrase made no wl_conf
+	    ## if password left blank, wpa_passphrase makes no wl_conf
 	    if [[ ! -f $wl_conf || ! -s $wl_conf ]]; then
 
 		## open network
-		printf "network={\nssid="$ssid"\nkey_mgmt=NONE\n}" > "$wl_conf"
+		printf "network={\n\tssid="$ssid"\n\tkey_mgmt=NONE\n}" > "$wl_conf"
 
 	    fi
 
@@ -483,7 +483,9 @@ supplicant_connect()
 {
     sudo systemctl start wpa_supplicant.service
     systemctl status wpa_supplicant.service
-    sudo wpa_supplicant -B -i "$interface" -c "$wl_conf"
+    #sudo wpa_supplicant -B -i "$interface" -c "$wl_conf"
+    #DEV debug wpa_supplicant:
+    sudo wpa_supplicant -d -B -i "$interface" -c "$wl_conf"
     echo
 }
 
@@ -513,9 +515,7 @@ dhcp_connect()
     # DEV service does not exist (install dhcpcd?)
     sudo systemctl start dhcpcd.service
     systemctl status dhcpcd.service
-    sudo dhcpcd $interface
-    #sudo dhcpcd -w $interface
-    #sudo dhcpcd --waitip $interface
+    sudo dhcpcd --waitip $interface
 
     echo
     printf "getting host information from dhcp server\n"
@@ -583,6 +583,13 @@ ext_ip_info()
     #ipex=$(dig myip.opendns.com @resolver1.opendns.com +dnssec +short)
 
     printf "obtaining external ip address...\n"
+
+    ## connecting wirelessly can take some time
+    if [[ $wireless == 1 ]]; then
+
+	sleep 3
+
+    fi
 
     try=0
     while [[ -z $ipex ]]; do

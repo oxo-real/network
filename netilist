@@ -1,0 +1,5 @@
+#! /usr/bin/env sh
+
+# list available network interfaces
+
+ip a | grep '^[0-9]' | awk -F ': ' '{print $2}'
