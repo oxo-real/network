@@ -61,8 +61,7 @@ initial_release='2019'
 
 ## hardcoded variables
 source_dir="$XDG_DATA_HOME/c/git/code/source/function"
-netkill="$XDG_DATA_HOME/c/git/code/netconn/netkill"
-netistat="$XDG_DATA_HOME/c/git/code/tool/netistat"
+network_dir="$XDG_DATA_HOME/c/git/code/network"
 temp_dir="$XDG_CACHE_HOME/temp"
 
 hostname='myip.opendns.com'
@@ -80,6 +79,9 @@ source $source_dir/text_appearance
 source $source_dir/reply_functions
 source $source_dir/splash_screen
 source $source_dir/get_sudo
+
+netkill="$network_dir/netkill"
+netistat="$network_dir/netistat"
 
 
 # read_flags
