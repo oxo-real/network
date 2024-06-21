@@ -54,6 +54,7 @@ set -o pipefail
 # initial definitions
 
 ## script
+script_dir="$XDG_DATA_HOME/c/git/code/network"
 script_name='netconn'
 developer='oxo'
 license='gplv3'
@@ -61,7 +62,7 @@ initial_release='2019'
 
 ## hardcoded variables
 source_dir="$XDG_DATA_HOME/c/git/code/source/function"
-network_dir="$XDG_DATA_HOME/c/git/code/network"
+network_dir="$script_dir"
 temp_dir="$XDG_CACHE_HOME/temp"
 
 hostname='myip.opendns.com'
@@ -141,6 +142,14 @@ done
 
 
 # specific function definitions
+
+
+check_sum()
+{
+    ## check file integrity
+    check-sum $(realpath $script_dir/$script_name)
+    [[ $? -ne 0 ]] && exit 88
+}
 
 
 become_quiet()
@@ -690,24 +699,31 @@ connect()
 }
 
 
-case $quiet in
+main()
+{
+    check_sum
 
-    1)
-	get_sudo
-	#become_quiet
-	#{
-	#    connect
-	#} 1>/dev/null 2>&1
-	connect > /dev/null 2>&1
-	#exec >/dev/null
-	#exec 2>&1
-	#connect
-	#unquiet
-	exit
-	;;
+    case $quiet in
 
-    *)
-	connect
-	;;
+	1)
+	    get_sudo
+	    #become_quiet
+	    #{
+	    #    connect
+	    #} 1>/dev/null 2>&1
+	    connect > /dev/null 2>&1
+	    #exec >/dev/null
+	    #exec 2>&1
+	    #connect
+	    #unquiet
+	    exit
+	    ;;
 
-esac
+	*)
+	    connect
+	    ;;
+
+    esac
+}
+
+main
