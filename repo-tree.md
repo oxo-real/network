@@ -7,8 +7,7 @@
 ├── netkill
 ├── netwlap
 ├── repo-tree.md
-├── repo_tree.md
-└── sha512sums
+└── sha3-512sums
 
-1 directory, 9 files
+1 directory, 8 files
 ```
