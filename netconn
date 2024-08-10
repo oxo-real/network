@@ -277,6 +277,14 @@ get_default_interface()
 
 	if [[ -z "$show_default_interface" ]]; then
 
+	    ## show wireguard interface (wg*)
+	    show_default_interface="$(printf "$i_avail" | \
+	    grep '^[0-9]\+:\swg')"
+
+	fi
+
+	if [[ -z "$show_default_interface" ]]; then
+
 	    ## show wireless interface (wl*) (again, this is correct)
 	    show_default_interface="$(printf "$i_avail" | \
 	    grep '^[0-9]\+:\swl')"
