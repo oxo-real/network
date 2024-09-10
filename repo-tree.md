@@ -6,8 +6,9 @@
 ├── netistat
 ├── netkill
 ├── netwlap
+├── nmconn
 ├── repo-tree.md
 └── sha3-512sums
 
-1 directory, 8 files
+1 directory, 9 files
 ```
