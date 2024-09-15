@@ -2,18 +2,21 @@
 
 # connect or disconnect to a network using nmcli
 
+source $XDG_DATA_HOME/c/git/code/source/function/text_appearance
+wg_interface_dir="$XDG_CONFIG_HOME/wireguard/interface"
+
+
 sudo -v
 sudo systemctl start NetworkManager.service systemd-resolved.service
 
 
 get_nm_info ()
 {
+    nmcli radio
     echo
     nmcli general status
     echo
     nmcli device status
-    echo
-    nmcli radio
     echo
 }
 
@@ -168,11 +171,37 @@ connect ()
 	    ;;
 
     esac
+
+    echo
+    vpn_connect
+}
+
+
+vpn_connect ()
+{
+    ## vpn connect
+    wg_interface_conf=$(ls $wg_interface_dir)
+    wg_interface=$(printf '%s' "$wg_interface_conf" | awk -F '.' '{print $1}')
+    wg_interface_select=$(printf '%s' "$wg_interface" | fzf)
+    [[ -z $wg_interface_select ]] && printf "${fg_amber}no vpn${st_def} connection selected\n" && exit 0
+    wg-quick up $wg_interface_select
+}
+
+
+vpn_disconnect ()
+{
+    ## vpn disconnect
+    wg_interface=$(wg show 2>&1 | cut -d ' ' -f 5 | tr -d ':')
+    [[ -z $wg_interface ]] && return
+    wg-quick down $wg_interface
 }
 
 
 disconnect ()
 {
+    vpn_disconnect
+    echo
+
     case $conn_sel_type in
 
 	wifi)
