@@ -32,7 +32,7 @@ select_connection ()
 
 	'')
 	    nmcli connection show
-	    exit 0
+	    #exit 0
 	    ;;
 
 	other_wl_ap)
@@ -131,7 +131,7 @@ determine_action ()
     if [[ -z "$conn_sel" ]]; then
 
 	nmcli connection show
-	exit 0
+	#exit 0
 
     fi
 
@@ -174,6 +174,7 @@ connect ()
 
     echo
     vpn_connect
+    echo
 }
 
 
@@ -229,6 +230,7 @@ main ()
     get_nm_info
     select_connection
     determine_action
+    get_nm_info
 }
 
 main
