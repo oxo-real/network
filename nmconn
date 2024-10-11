@@ -184,7 +184,7 @@ vpn_connect ()
     wg_interface_conf=$(ls $wg_interface_dir)
     wg_interface=$(printf '%s' "$wg_interface_conf" | awk -F '.' '{print $1}')
     wg_interface_select=$(printf '%s' "$wg_interface" | fzf)
-    [[ -z $wg_interface_select ]] && printf "${fg_amber}no vpn${st_def} connection selected\n" && exit 0
+    [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} connection selected\n" && exit 0
     wg-quick up $wg_interface_select
 }
 
