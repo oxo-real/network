@@ -3,7 +3,7 @@
 # connect or disconnect to a network using nmcli
 
 source $XDG_DATA_HOME/c/git/code/source/function/text_appearance
-wg_interface_dir="$XDG_CONFIG_HOME/wireguard/interface"
+wg_interface_dir="$XDG_CONFIG_HOME/network/vpn/wg/proton/interface"
 
 
 sudo -v
@@ -30,12 +30,11 @@ select_connection ()
 
     case $conn_sel in
 
-	'')
-	    nmcli connection show
-	    #exit 0
+	'' )
+	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
 	    ;;
 
-	other_wl_ap)
+	other_wl_ap )
 	    ## add a new wireless connection
 
 	    rfkill unblock wifi
@@ -69,7 +68,7 @@ select_connection ()
 	    add_connection
 	    ;;
 
-	*)
+	* )
 	    ## known connection selected
 
 	    ## mitigate possible spaces in connection name
@@ -110,12 +109,12 @@ add_connection ()
 	wifi)
 	    case $conn_sel_security in
 
-		*WPA*)
+		*WPA* )
 		    ## enter wifi password
 		    nmcli device wifi connect $conn_sel_ssid --ask
 		    ;;
 
-		*)
+		* )
 		    nmcli device wifi connect $conn_sel_ssid
 		    ;;
 
@@ -130,24 +129,40 @@ determine_action ()
 {
     if [[ -z "$conn_sel" ]]; then
 
+	## no connection selected
 	nmcli connection show
-	#exit 0
+
+	case $wg_interface in
+
+	    '' )
+		vpn_connect
+		;;
+
+	    * )
+		echo
+		wg_interface=$(printf '%s' "$wg_interface" | fzf --exit-0 --prompt 'disconnect vpn ')
+		vpn_disconnect
+		;;
+
+	esac
+
+    else
+
+	case $conn_sel_device in
+
+	    -- | '' )
+		## connect
+		connect
+		;;
+
+	    * )
+		## disconnect
+		disconnect
+		;;
+
+	esac
 
     fi
-
-    case $conn_sel_device in
-
-	-- | '')
-	    ## connect
-	    connect
-	    ;;
-
-	*)
-	    ## disconnect
-	    disconnect
-	    ;;
-
-    esac
 }
 
 
@@ -155,7 +170,7 @@ connect ()
 {
     case $conn_sel_type in
 
-	wifi)
+	wifi )
 	    ## connect wifi
 	    rfkill unblock wifi
 	    nmcli radio wifi on
@@ -165,7 +180,12 @@ connect ()
 	    nmcli device status
 	    ;;
 
-	*)
+	'' )
+	    ## no connection selected
+	    :
+	    ;;
+
+	* )
 	    ## connect non-wifi
 	    nmcli connection up "$conn_sel_name"
 	    ;;
@@ -181,32 +201,37 @@ connect ()
 vpn_connect ()
 {
     ## vpn connect
-    wg_interface_conf=$(ls $wg_interface_dir)
+    echo
+    wg_interface_conf=$(fd --format {/.} . $wg_interface_dir)
+    # wg_interface_conf=$(ls $wg_interface_dir)
     wg_interface=$(printf '%s' "$wg_interface_conf" | awk -F '.' '{print $1}')
     wg_interface_select=$(printf '%s' "$wg_interface" | fzf)
-    [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} connection selected\n" && exit 0
-    wg-quick up $wg_interface_select
+
+    ## no interface selected
+    [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} selected\n"
+    # [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} selected\n" && exit 0
+    [[ -n $wg_interface_select ]] && wg-quick up $wg_interface_select && printf "[#] $wg_interface_select ${fg_green}up${st_def}\n"
+    echo
+    return
 }
 
 
 vpn_disconnect ()
 {
-    ## vpn disconnect
-    wg_interface=$(wg show 2>&1 | cut -d ' ' -f 5 | tr -d ':')
-    [[ -z $wg_interface ]] && return
-    wg-quick down $wg_interface
+    [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] $wg_interface ${fg_amber}down${st_def}\n"
+    echo
+    return
 }
 
 
 disconnect ()
 {
-    vpn_disconnect
-    echo
-
     case $conn_sel_type in
 
-	wifi)
+	wifi )
 	    ## disconnect wifi
+	    echo
+	    vpn_disconnect
 	    nmcli connection down "$conn_sel_ssid"
 	    nmcli radio wifi off
 	    rfkill block wifi
@@ -214,8 +239,16 @@ disconnect ()
 	    nmcli device status
 	    ;;
 
-	*)
+	wireguard )
+	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
+	    echo
+	    vpn_disconnect
+	    ;;
+
+	* )
 	    ## disconnect non-wifi
+	    echo
+	    vpn_disconnect
 	    nmcli connection down "$conn_sel_name"
 	    echo
 	    nmcli device status
@@ -227,9 +260,13 @@ disconnect ()
 
 main ()
 {
+    ## status before nmconn
     get_nm_info
+
     select_connection
     determine_action
+
+    ## status after nmconn
     get_nm_info
 }
 
