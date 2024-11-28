@@ -278,7 +278,7 @@ vpn_connect ()
     wg_interface_conf=$(fd --format {/.} . $wg_interface_dir)
     # wg_interface_conf=$(ls $wg_interface_dir)
     wg_interface=$(printf '%s' "$wg_interface_conf" | awk -F '.' '{print $1}')
-    wg_interface_select=$(printf '%s' "$wg_interface" | fzf)
+    wg_interface_select=$(printf '%s' "$wg_interface" | fzf --exit-0 --prompt 'connect vpn ')
 
     ## no interface selected
     [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} selected\n"
@@ -304,6 +304,7 @@ disconnect ()
 	wifi )
 	    ## disconnect wifi
 	    echo
+	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
 	    vpn_disconnect
 	    nmcli connection down "$conn_sel_ssid"
 	    nmcli radio wifi off
@@ -321,6 +322,7 @@ disconnect ()
 	* )
 	    ## disconnect non-wifi
 	    echo
+	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
 	    vpn_disconnect
 	    nmcli connection down "$conn_sel_name"
 	    echo
