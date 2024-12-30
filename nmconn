@@ -64,6 +64,12 @@ initial_release='2023'
 source $XDG_DATA_HOME/c/git/code/source/function/text_appearance
 wg_interface_dir="$XDG_CONFIG_HOME/network/vpn/wg/proton/interface"
 
+## source functions
+source_dir="$XDG_DATA_HOME/c/git/code/source/function"
+source $source_dir/text_appearance
+source $source_dir/reply_functions
+source $source_dir/get_sudo
+
 
 #--------------------------------
 
@@ -79,8 +85,12 @@ check_sum ()
 }
 
 
-sudo -v
-sudo systemctl start NetworkManager.service systemd-resolved.service
+start_nm ()
+{
+    get_sudo
+    sudo systemctl start NetworkManager.service
+    sudo systemctl start systemd-resolved.service
+}
 
 
 get_nm_info ()
@@ -293,7 +303,23 @@ vpn_disconnect ()
 {
     [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] $wg_interface ${fg_amber}down${st_def}\n"
     echo
-    return
+
+    printf '%s' 'vpn reconnect? [y/N] '
+    reply_read_single
+
+    case $reply in
+
+	y|Y )
+	    vpn_connect
+	    ;;
+
+	* )
+	    tput cuu1
+	    printf '\r'
+	    tput el
+	    ;;
+
+    esac
 }
 
 
@@ -336,6 +362,7 @@ disconnect ()
 main ()
 {
     check_sum
+    start_nm
 
     ## status before nmconn
     get_nm_info
