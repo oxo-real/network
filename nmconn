@@ -293,7 +293,7 @@ vpn_connect ()
     ## no interface selected
     [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} selected\n"
     # [[ -z $wg_interface_select ]] && printf "${fg_white}no vpn${st_def} selected\n" && exit 0
-    [[ -n $wg_interface_select ]] && wg-quick up $wg_interface_select && printf "[#] $wg_interface_select ${fg_green}up${st_def}\n"
+    [[ -n $wg_interface_select ]] && wg-quick up $wg_interface_select && printf "[#] ${fg_green}$wg_interface_select${st_def} up\n"
     echo
     return
 }
@@ -301,7 +301,7 @@ vpn_connect ()
 
 vpn_disconnect ()
 {
-    [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] $wg_interface ${fg_amber}down${st_def}\n"
+    [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] ${fg_amber}$wg_interface${st_def} down\n"
     echo
 
     printf '%s' 'vpn reconnect? [y/N] '
