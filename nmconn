@@ -304,6 +304,8 @@ vpn_disconnect ()
     [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] ${fg_amber}$wg_interface${st_def} down\n"
     echo
 
+    ##TODO DEV only if network is active
+    ##TODO DEV if 'main' goes down automatically vpn down
     printf '%s' 'vpn reconnect? [y/N] '
     reply_read_single
 
