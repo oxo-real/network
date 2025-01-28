@@ -240,6 +240,7 @@ determine_action ()
 
 	    * )
 		## disconnect
+		[[ -n $wg_interface ]] && vpn_disconnect
 		disconnect
 		;;
 
@@ -311,7 +312,7 @@ vpn_disconnect ()
 
     case $reply in
 
-	y|Y )
+	y | Y )
 	    vpn_connect
 	    ;;
 
