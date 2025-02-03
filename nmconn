@@ -14,7 +14,7 @@
 : '
 nmconn
 (dis)connect to a network using nmcli
-copyright (c) 2023 - 2024  |  oxo
+copyright (c) 2023 - 2025  |  oxo
 
 GNU GPLv3 GENERAL PUBLIC LICENSE
 This program is free software: you can redistribute it and/or modify
@@ -305,24 +305,26 @@ vpn_disconnect ()
     [[ -n $wg_interface ]] && wg-quick down $wg_interface && printf "[#] ${fg_amber}$wg_interface${st_def} down\n"
     echo
 
-    ##TODO DEV only if network is active
-    ##TODO DEV if 'main' goes down automatically vpn down
-    printf '%s' 'vpn reconnect? [y/N] '
-    reply_read_single
+    if [[ "$conn_sel" == "$wg_interface" ]]; then
 
-    case $reply in
+	printf '%s' 'vpn reconnect? [y/N] '
+	reply_read_single
 
-	y | Y )
-	    vpn_connect
-	    ;;
+	case $reply in
 
-	* )
-	    tput cuu1
-	    printf '\r'
-	    tput el
-	    ;;
+	    y | Y )
+		vpn_connect
+		;;
 
-    esac
+	    * )
+		tput cuu1
+		printf '\r'
+		tput el
+		;;
+
+	esac
+
+    fi
 }
 
 
