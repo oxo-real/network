@@ -109,7 +109,7 @@ select_connection ()
     ## known connections
     ## human readable (no -terse) version here for fzf
     conn_list=$(nmcli connection show)
-    conn_sel=$(printf '%s\n%s\n' "$conn_list" 'other_wl_ap' | fzf --header-lines 1 --prompt 'select connection ')
+    conn_sel=$(printf '%s\n%s\n' "$conn_list" 'other_wap' | fzf --header-lines 1 --prompt 'select connection ')
 
     case $conn_sel in
 
@@ -194,7 +194,7 @@ add_connection ()
 
 		*WPA* )
 		    ## enter wifi password
-		    nmcli device wifi connect $conn_sel_ssid --ask
+		    nmcli --ask device wifi connect $conn_sel_ssid
 		    ;;
 
 		* )
@@ -202,6 +202,12 @@ add_connection ()
 		    ;;
 
 	    esac
+
+	    ## store nm_wap_file in user environment
+	    ens=/etc/NetworkManager/system-connections
+	    nm_wap_file=$(sudo ls -t "$ens"/*.nmconnection | head -n 1)
+	    cnw="$XDG_CONFIG_HOME"/network/wap
+	    sudo cp --archive --interactive --verbose "$nm_wap_file" "$cnw"
 	    ;;
 
     esac
@@ -259,6 +265,29 @@ connect ()
 	    rfkill unblock wifi
 	    nmcli radio wifi on
 	    sleep 1
+
+	    ## check for existing pass.wifi
+	    while read -r line; do
+
+		## wpa_passphrase puts values within double quotes
+		line_ssid=$(sed 's/ssid=//' <<< "$line" | awk -F '"' '{print $2}')
+
+		if [[ "$line_ssid" == "$con_sel_ssid" ]]; then
+		    ## known wireless access point
+
+		    nmcli connection up "$conn_sel_ssid"
+		    echo
+		    nmcli device status
+
+		elif
+		    ## no known wap
+		    :
+
+		fi
+
+	    done <<< $(grep -riIn ssid $XDG_CONFIG_HOME/network/wap)
+
+	    [[ -f $XDG_CONFIG_HOME/network/wap/$con_sel_ssid.wifi
 	    nmcli connection up "$conn_sel_ssid"
 	    echo
 	    nmcli device status
