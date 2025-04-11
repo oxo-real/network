@@ -273,24 +273,16 @@ connect ()
 		line_ssid=$(sed 's/ssid=//' <<< "$line" | awk -F '"' '{print $2}')
 
 		if [[ "$line_ssid" == "$con_sel_ssid" ]]; then
-		    ## known wireless access point
+		    ## ssid exists in cnw
 
 		    nmcli connection up "$conn_sel_ssid"
 		    echo
 		    nmcli device status
 
-		elif
-		    ## no known wap
-		    :
-
 		fi
 
-	    done <<< $(grep -riIn ssid $XDG_CONFIG_HOME/network/wap)
-
-	    [[ -f $XDG_CONFIG_HOME/network/wap/$con_sel_ssid.wifi
-	    nmcli connection up "$conn_sel_ssid"
-	    echo
-	    nmcli device status
+		## need sudo to include reading nmconnection files
+	    done <<< $(sudo grep -riIn ssid $XDG_CONFIG_HOME/network/wap)
 	    ;;
 
 	'' )
