@@ -62,6 +62,8 @@ initial_release='2023'
 
 ## hardcoded variables
 source $XDG_DATA_HOME/c/git/code/source/function/text_appearance
+ens=/etc/NetworkManager/system-connections
+lsckw="$XDG_DATA_HOME"/c/keys/wap
 wg_interface_dir="$XDG_CONFIG_HOME/network/vpn/wg/proton/interface"
 
 ## source functions
@@ -117,7 +119,7 @@ select_connection ()
 	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
 	    ;;
 
-	other_wl_ap )
+	other_wap )
 	    ## add a new wireless connection
 
 	    rfkill unblock wifi
@@ -204,10 +206,8 @@ add_connection ()
 	    esac
 
 	    ## store nm_wap_file in user environment
-	    ens=/etc/NetworkManager/system-connections
 	    nm_wap_file=$(sudo ls -t "$ens"/*.nmconnection | head -n 1)
-	    cnw="$XDG_CONFIG_HOME"/network/wap
-	    sudo cp --archive --interactive --verbose "$nm_wap_file" "$cnw"
+	    sudo cp --archive --interactive --verbose "$nm_wap_file" "$lsckw"
 	    ;;
 
     esac
@@ -276,13 +276,15 @@ connect ()
 		    ## ssid exists in cnw
 
 		    nmcli connection up "$conn_sel_ssid"
+		    #TODO if radio off
+		    # Error: Connection activation failed: The Wi-Fi network could not be found
 		    echo
 		    nmcli device status
 
 		fi
 
 		## need sudo to include reading nmconnection files
-	    done <<< $(sudo grep -riIn ssid $XDG_CONFIG_HOME/network/wap)
+	    done <<< $(sudo grep -riIn ssid "$lsckw")
 	    ;;
 
 	'' )
