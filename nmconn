@@ -194,6 +194,7 @@ add_connection ()
 		    ## store wpa_passphrase to a *.wifi file
 		    ## use wpa_passphrase for this,
 		    ## because .nmconnection files have 'difficult' permissions
+		    [[ -d "$cnw" ]] || mkdir -p "$cnw"
 		    wpa_passphrase "$conn_sel_ssid" "$wifi_pass" > "$cnw"/"$conn_sel_ssid".wifi
 
 		    ## clear out password
