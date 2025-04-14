@@ -233,8 +233,10 @@ determine_action ()
 
 	    * )
 		echo
-		wg_interface=$(printf '%s' "$wg_interface" | fzf --exit-0 --prompt 'disconnect vpn ')
-		vpn_disconnect
+		wg_interface=$(printf '%s\n%s' 'no' "$wg_interface" | fzf --exit-0 --prompt 'disconnect vpn ')
+
+		[[ "$wg_interface" != no ]] && vpn_disconnect
+		exit 0
 		;;
 
 	esac
@@ -388,10 +390,9 @@ vpn_disconnect ()
 		vpn_connect
 		;;
 
-	    * )
+	    '' | * )
 		tput cuu1
-		printf '\r'
-		tput el
+		erase_line
 		;;
 
 	esac
