@@ -96,12 +96,21 @@ start_nm ()
 
 get_nm_info ()
 {
+    rfkill
+    echo
     nmcli radio
     echo
     nmcli general status
     echo
     nmcli device status
     echo
+}
+
+
+erase_line ()
+{
+    printf "\r"
+    tput el
 }
 
 
@@ -139,8 +148,6 @@ select_connection ()
 	    conn_sel_chan=$(printf '%s' "$conn_sel" | awk '{print $4}')
 	    conn_sel_signal=$(printf '%s' "$conn_sel" | awk '{print $7}')
 	    conn_sel_security=$(printf '%s' "$conn_sel" | awk '{print $NF}')
-
-	    printf '\r connect to SSID: %s\n' "$conn_sel_ssid"
 
 	    add_connection
 	    ;;
@@ -188,7 +195,7 @@ add_connection ()
 
 		*WPA* )
 		    ## enter wifi password
-		    printf 'enter passphrase:\n'
+		    printf 'enter passphrase for %s\n' "$conn_sel_ssid"
 		    wifi_pass=$(askpass)
 
 		    ## store wpa_passphrase to a *.wifi file
@@ -257,7 +264,6 @@ wifi_radio_on ()
 {
     rfkill unblock wifi
     nmcli radio wifi on
-    sleep 2
 }
 
 
@@ -281,9 +287,6 @@ connect ()
 		nmcli device wifi connect "$conn_sel_ssid"
 
 	    fi
-
-	    echo
-	    nmcli device status
 	    ;;
 
 	'' )
@@ -299,9 +302,19 @@ connect ()
 
     esac
 
-    echo
-    vpn_connect
-    echo
+    ## nmcli device status
+    device_state=$(nmcli device status | grep "$conn_sel_name" | awk '{print $3}')
+    if [[ "$device_state" == *connected* ]]; then
+
+	echo
+	vpn_connect
+	echo
+
+    else
+
+	exit 22
+
+    fi
 }
 
 
@@ -311,7 +324,7 @@ disconnect ()
 
 	wifi )
 	    ## disconnect wifi
-	    echo
+	    # echo
 	    wg_interface=$(nmcli device status | grep wireguard | grep --word-regexp connected | awk '{print $NF}')
 	    vpn_disconnect
 	    nmcli connection down "$conn_sel_ssid"
