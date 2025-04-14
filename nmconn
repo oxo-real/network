@@ -120,6 +120,8 @@ select_connection ()
     ## human readable (no -terse) version here for fzf
     conn_list=$(nmcli connection show)
     conn_sel=$(printf '%s\n%s\n' "$conn_list" 'other_wap' | fzf --header-lines 1 --prompt 'select connection ')
+    #TODO fzf --track
+    # conn_sel=$(printf '%s\n%s\n' "$conn_list" 'other_wap' | fzf --track --header-lines 1 --prompt 'select connection ')
 
     case $conn_sel in
 
