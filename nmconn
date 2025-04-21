@@ -139,6 +139,7 @@ select_connection ()
 	    ## filter out connection in-use
 	    ## NOTICE $conn_sel source changes to device wifi list
 	    # conn_sel=$(nmcli device wifi list | grep --invert-match '^*' | fzf --header-lines 1)
+	    erase_line
 	    conn_sel=$(nmcli device wifi list | fzf --header-lines 1)
 
 	    ## mitigate possible spaces in connection name
@@ -169,14 +170,14 @@ select_connection ()
 	    ## ($con_sel_ssid & $con_sel_name)
 	    case $conn_sel_type in
 
-		wifi | *wireless*)
+		wifi | *wireless* )
 		    ## set type to wifi (in case of 802-11-wireless)
 		    conn_sel_type='wifi'
 		    ## mitigate possible spaces in connection name
 		    conn_sel_ssid=$(nmcli -terse connection show | grep $conn_sel_uuid | awk -F : '{print $1}')
 		    ;;
 
-		*)
+		* )
 		    ## mitigate possible spaces in connection name
 		    conn_sel_name=$(nmcli -terse connection show | grep $conn_sel_uuid | awk -F : '{print $1}')
 		    ;;
@@ -192,7 +193,7 @@ add_connection ()
 {
     case $conn_sel_type in
 
-	wifi)
+	wifi )
 	    case $conn_sel_security in
 
 		*WPA* )
