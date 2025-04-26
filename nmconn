@@ -236,7 +236,7 @@ determine_action ()
 
 	    * )
 		echo
-		wg_interface=$(printf '%s\n%s' 'no' "$wg_interface" | fzf --exit-0 --prompt 'disconnect vpn ')
+		wg_interface=$(printf '%s\n%s' "$wg_interface" 'no' | fzf --exit-0 --prompt 'disconnect vpn ')
 
 		[[ "$wg_interface" != no ]] && vpn_disconnect
 		exit 0
@@ -363,7 +363,8 @@ vpn_connect ()
 {
     ## vpn connect
     echo
-    wg_interface_conf=$(fd --format {/.} . $wg_interface_dir)
+    ## fd format basename wo extension
+    wg_interface_conf=$(fd --format {/.} . $wg_interface_dir | grep 'wg.*')
     # wg_interface_conf=$(ls $wg_interface_dir)
     wg_interface=$(printf '%s' "$wg_interface_conf" | awk -F '.' '{print $1}')
     wg_interface_select=$(printf '%s' "$wg_interface" | fzf --exit-0 --prompt 'connect vpn ')
