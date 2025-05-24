@@ -1,0 +1,21 @@
+#! /usr/bin/env sh
+
+# customization of stevenblack blocklist
+
+## variables
+ch="$XDG_CONFIG_HOME"/hosts  ## dir
+hosts="$ch"/hosts
+
+git -C "$ch" switch blocklist_on
+#git checkout blocklist_on
+
+# comment out these entries (remove from blocklist)
+sed -i '/^0.0.0.0 reddit.com$/s/^/#/' $ch
+sed -i '/^0.0.0.0 www.reddit.com$/s/^/#/' $ch
+
+# append these entries (add to blocklist)
+printf "0.0.0.0 improving.duckduckgo.com" >> $ch
+
+# some git administration
+git -C "$hosts_dir" add "$ch"/hosts
+git -C "$hosts_dir" commit -a -m "$(date +%Y%m%d_%H%M%S)_custom_bl"

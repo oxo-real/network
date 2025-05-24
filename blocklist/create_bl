@@ -1,0 +1,64 @@
+#! /usr//bin/env sh
+
+## this scripts creates a blocklist in $XDG_CONFIG_HOME//hosts
+
+## variables
+cgchsn="$XDG_DATA_HOME"/c/git/code/hajime/setup/network
+ch="$XDG_CONFIG_HOME"/hosts  ## dir
+eh=/etc/hosts                ## file
+sb=https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts
+
+
+# create blocklist
+
+## create config dir
+[[ -d "$ch" ]] || mkdir -p "$ch"
+
+## init git repo if non-existent
+## WARNING no double quotes for $git_cch
+[[ -d "$ch"/.git ]] || git -C "$ch" init
+
+## create branch blocklist_off and switch to it
+git -C "$ch" checkout -b blocklist_off
+# git -C "$ch" switch blocklist_off
+
+## if "$eh" is a file (not a symlink) then
+## create copy of file /etc/hosts to /etc/hosts.org
+## ("$eh" symlink is created below)
+if [[ ! -f "$eh" ]]; then
+
+    ## copy a default etc_hosts
+    sudo cp "$cgchsn"/etc_hosts /etc
+    ## create an active etc/hosts
+    sudo cp /etc/etc_hosts "$eh"
+    ## replace $HOSTNAME with current machine hostname
+    sudo sed "s/\$HOSTNAME/$HOSTNAME/" "$eh"
+
+fi
+
+## copy original /etc/hosts to $ch in branch blocklist_off
+cp "$eh" "$ch"
+
+## git add and commit blocklist_off
+git -C "$ch" add "$ch"/hosts
+git -C "$ch" commit -a -m 'branch blocklist_off created with create_bl'
+
+## create branch blocklist_on and switch to it
+git -C "$ch" checkout -b blocklist_on
+# git -C "$ch" switch blocklist_on
+
+## curl stevenblack blocklist hosts file to $ch in branch blocklist_on
+curl "$sb" > "$ch"/hosts
+
+## git add and commit blocklist_on
+git -C "$ch" add "$ch"/hosts
+git -C "$ch" commit -a -m 'branch blocklist_on created with create_bl'
+
+## point /etc/hosts to ~/.config/hosts/hosts via symlink
+sudo ln --symbolic --force "$ch"/hosts "$eh"
+
+printf 'hosts blocklist created succesfully\n'
+
+## now you can alter hosts versions with git switch
+## % git -C "$XDG_CONFIG_HOME"/hosts switch blocklist_off
+## % git -C "$XDG_CONFIG_HOME"/hosts switch blocklist_on
