@@ -1,8 +1,7 @@
-#! /usr//bin/sh
+#! /usr/bin/env sh
 
 ## variables
 ch="$XDG_CONFIG_HOME"/hosts  ## dir
-eh=/etc/hosts                ## file
 sb=https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts
 
 
@@ -15,7 +14,7 @@ git -C "$ch" switch blocklist_on
 curl "$sb" > "$ch"/hosts
 
 ## git add and commit blocklist_on
-git -C "$sb" add "$ch"/hosts
-git -C "$sb" commit -a -m 'blocklist updated with update_bl'
+git -C "$ch" add "$ch"/hosts
+git -C "$ch" commit -a -m 'blocklist updated with update_bl'
 
 printf 'hosts blocklist updated succesfully\n'
