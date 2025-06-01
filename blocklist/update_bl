@@ -1,7 +1,7 @@
 #! /usr/bin/env sh
 
 ## variables
-ch="$XDG_CONFIG_HOME"/hosts  ## dir
+ch="$XDG_CONFIG_HOME"/network/hosts  ## dir
 sb=https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenews-gambling-porn-social/hosts
 
 
