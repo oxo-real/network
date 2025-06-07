@@ -11,7 +11,11 @@ sb=https://raw.githubusercontent.com/StevenBlack/hosts/master/alternates/fakenew
 git -C "$ch" switch blocklist_on
 
 ## curl stevenblack blocklist hosts file to $ch in branch blocklist_on
-curl "$sb" > "$ch"/hosts
+curl "$sb" > "$ch"/hosts_dl
+
+## only copy ''correct' file
+[[ "$?" -eq 0 ]] && cp "$ch"/hosts_dl "$ch"/hosts
+
 
 ## git add and commit blocklist_on
 git -C "$ch" add "$ch"/hosts
