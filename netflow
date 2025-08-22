@@ -13,8 +13,8 @@
 
 : '
 netflow
-monitor data flow in a network
-copyright (c) 2024  |  oxo
+monitor data throughput in a network
+copyright (c) 2024 - 2025  |  oxo
 
 GNU GPLv3 GENERAL PUBLIC LICENSE
 This program is free software: you can redistribute it and/or modify
@@ -52,6 +52,12 @@ initial_release='2024'
 source "$XDG_DATA_HOME/c/git/code/source/function/text_appearance"
 
 interval=1
+
+## hide cursor
+tput civis
+
+## show cursor
+trap "tput cnorm" SIGINT
 
 # get zero points for rx and tx
 i=$(ip route show | grep default | awk '{print $5}')
@@ -101,6 +107,6 @@ while true; do
 
     ## erase line
     printf "\r"
-    tput el
+    # tput el
 
 done
